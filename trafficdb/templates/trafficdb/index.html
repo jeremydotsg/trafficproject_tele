@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  
+  {% include "trafficdb/static.html" %}
+</head>
+<body>
+	{% include "trafficdb/header.html" %}
+	<div class="container mt-5 px-5">
+	    <h1 class="mb-4 text-center">Checkpoint got Jam?</h1>
+	    <p class="text-center mb-4">This is a community to share the queue updates in a visually pleasant way.</p>
+	    <p class="text-center mb-4">Click on the status buttons on the right to update the status.</p>
+	    {% for direction, queues in packed.items %}
+	        <div class="card mb-3 mx-auto" style="margin-left:50%;">
+	            <div class="card-header bg-secondary text-white">
+	                <h2 class="mb-0">{{ direction }}</h2>
+	            </div>
+	            <ul class="list-group list-group-flush">
+	                {% for queue, status in queues.items %}
+	                    <li class="list-group-item d-flex justify-content-between align-items-center">
+	                        <span class="fw-bold">{{ queue }}</span>
+	                        <a href="{% url 'trafficdb:queue_detail' queue_id=queue.id %}" class="stretched-link">
+	                            {% if status %}
+	                                <button type="button" class="btn {{ status.queueLength.queueColor }} float-end">{{ status.queueLength }}</button>
+	                            {% else %}
+	                                <button type="button" class="btn btn-light float-end">No data</button>
+	                            {% endif %}
+	                        </a>
+	                    </li>
+	                {% endfor %}
+	            </ul>
+	        </div>
+	    {% endfor %}
+	</div>
+	{% include "trafficdb/footer.html" %}
+</body>
+</html>
