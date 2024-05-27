@@ -21,7 +21,6 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/trafficdb/')),
-    path("polls/", include("polls.urls")),
     path("trafficdb/", include("trafficdb.urls")),
     path('admin/', admin.site.urls),
 ]
