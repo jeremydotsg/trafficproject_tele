@@ -4,7 +4,10 @@ from . import views
 
 app_name = "trafficdb"
 urlpatterns = [
-    path("", IndexView.as_view(), name="index"),
+    path("", views.blog_index, name="blog_index"),
+    path("post/<int:pk>/", views.blog_detail, name="blog_detail"),
+    path("category/<category>/", views.blog_category, name="blog_category"),
+    path("dashboard/", IndexView.as_view(), name="index"),
     path('queues/', views.queue_list, name='queue_list'),
     path('queues/<int:queue_id>/', views.queue_detail, name='queue_detail'),
     path('disclaimer/', disclaimer, name='disclaimer'),

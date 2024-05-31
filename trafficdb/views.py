@@ -4,7 +4,7 @@ from django.views import View
 from django.views import generic
 from django.utils import timezone
 from django.db.models import F, Max, OuterRef, Subquery
-from .models import Queue, Direction, QueueStatus, QueueType, QueueLength
+from .models import Queue, Direction, QueueStatus, QueueType, QueueLength, Post, Comment, Category
 from .forms import QueueStatusForm
 from django.utils.functional import empty
 from datetime import timedelta
@@ -88,3 +88,33 @@ def disclaimer(request):
 #         return QueueStatus.objects.filter(createdTime__lte=timezone.now()).order_by("-createdTime")[
 #             :5
 #         ]
+
+
+
+def blog_index(request):
+    posts = Post.objects.all().order_by("-created_on")
+    context = {
+        "posts": posts,
+    }
+    return render(request, "trafficdb/blog_index.html", context)
+
+
+def blog_category(request, category):
+    posts = Post.objects.filter(
+        categories__name__contains=category
+    ).order_by("-created_on")
+    context = {
+        "category": category,
+        "posts": posts,
+    }
+    return render(request, "trafficdb/category.html", context)
+
+def blog_detail(request, pk):
+    post = Post.objects.get(pk=pk)
+    comments = Comment.objects.filter(post=post)
+    context = {
+        "post": post,
+        "comments": comments,
+    }
+
+    return render(request, "trafficdb/detail.html", context)

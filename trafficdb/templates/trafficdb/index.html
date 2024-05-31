@@ -7,31 +7,47 @@
 </head>
 <body>
 	{% include "trafficdb/header.html" %}
-	<div class="container mt-5 px-5">
-	    <h1 class="mb-4 text-center">Checkpoint got Jam?</h1>
-	    <p class="text-center mb-4">This is a community to share the queue updates in a visually pleasant way.</p>
-	    <p class="text-center mb-4">Click on the status buttons on the right to update the status.</p>
-	    {% for direction, queues in packed.items %}
-	        <div class="card mb-3 mx-auto" style="margin-left:50%;">
-	            <div class="card-header bg-secondary text-white">
-	                <h2 class="mb-0">{{ direction }}</h2>
-	            </div>
-	            <ul class="list-group list-group-flush">
-	                {% for queue, status in queues.items %}
-	                    <li class="list-group-item d-flex justify-content-between align-items-center">
-	                        <span class="fw-bold">{{ queue }}</span>
-	                        <a href="{% url 'trafficdb:queue_detail' queue_id=queue.id %}" class="stretched-link">
-	                            {% if status %}
-	                                <button type="button" class="btn {{ status.queueLength.queueColor }} float-end">{{ status.queueLength }}</button>
-	                            {% else %}
-	                                <button type="button" class="btn btn-light float-end">No data</button>
-	                            {% endif %}
-	                        </a>
-	                    </li>
-	                {% endfor %}
-	            </ul>
-	        </div>
-	    {% endfor %}
+	<div class="container-lg mt-3 px-xs-0 px-sm-0">
+	    <h1 class="mb-3 text-center">Checkpoint Status</h1>
+	    <p class="text-center mb-3">Stay informed about queue updates!</p>
+	    <p class="text-center mb-3">Click the tabs below to view the status.</p>
+	    <nav>
+		  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+		  	{% for direction, queues in packed.items %}
+			  	{% if forloop.first %}
+			    	<button class="nav-link active" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="true">{{direction}}</button>
+			    {% else %}
+					<button class="nav-link" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="false">{{direction}}</button>
+			  	{% endif %}
+			{% endfor %}
+		  </div>
+		</nav>
+		<div class="tab-content" id="nav-tabContent">
+			{% for direction, queues in packed.items %}
+				{% if forloop.first %}
+		  		<div class="tab-pane fade show active" id="nav-{{ forloop.counter }}" role="tabpanel" aria-labelledby="nav-{{ forloop.counter }}-tab">
+		  		{% else %}
+		  		<div class="tab-pane fade" id="nav-{{ forloop.counter }}" role="tabpanel" aria-labelledby="nav-{{ forloop.counter }}-tab">
+		  		{% endif %}
+		  			<ul class="list-group list-group-flush">
+	                    {% for queue, status in queues.items %}
+	                        <li class="list-group-item d-flex justify-content-between align-items-center">
+	                            <span class="fw-bold">{{ queue }}</span>
+	                            <a href="{% url 'trafficdb:queue_detail' queue_id=queue.id %}" class="stretched-link">
+	                                {% if status %}
+	                                    <button type="button" class="btn {{ status.queueLength.queueColor }} btn-sm float-end">{{ status.queueLength }}</button>
+	                                {% else %}
+	                                    <button type="button" class="btn btn-light btn-sm float-end">No data</button>
+	                                {% endif %}
+	                            </a>
+	                        </li>
+	                    {% endfor %}
+	                </ul>
+		  		</div>
+			{% endfor %}
+		  
+		  <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
+		</div>
 	</div>
 	{% include "trafficdb/footer.html" %}
 </body>

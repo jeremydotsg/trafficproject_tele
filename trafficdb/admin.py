@@ -1,45 +1,7 @@
 from django.contrib import admin
 from .models import Direction, Queue, QueueType, QueueLength,QueueStatus    
+from .models import Category, Comment, Post
 
-# Register your models here.
-# class DirectionAdmin(admin.ModelAdmin):
-#     fieldsets = [
-#         ("Direction Config", {"fields": ["direction_text","direction_helptext","direction_display"]}),
-#     ]
-#     list_display = ["direction_text","direction_helptext","direction_display"]
-#     #list_filter = ["pub_date"]
-#     #list_display = ["question_text", "pub_date", "was_published_recently"]
-#     #search_fields = ["question_text"]
-#
-# class QueueTypeAdmin(admin.ModelAdmin):
-#     fieldsets = [
-#         ("Queue Type Config", {"fields": ["queue_type_display"]}),
-#     ]
-#     list_display = ["queue_type_display"]
-#
-#
-#
-# class QueueLengthAdmin(admin.ModelAdmin):
-#     fieldsets = [
-#         ("Queue Length", {"fields": ["queue_length_text"]}),
-#     ]
-#     list_display = ["queue_length_text"]
-#
-# class QueueStatusInline(admin.TabularInline):
-#     model = QueueStatus
-#     extra = 3
-#
-# class QueueAdmin(admin.ModelAdmin):
-#     fieldsets = [
-#         ("Queue Config", {"fields": ["direction_type","queue_display","queue_helptext","queue_type"]}),
-#     ]
-#     list_display = ["queue_display","direction_type","queue_helptext","queue_type"]
-#     inlines = [QueueStatusInline]
-#
-# admin.site.register(Direction, DirectionAdmin)
-# admin.site.register(QueueType, QueueTypeAdmin)
-# admin.site.register(Queue, QueueAdmin)
-# admin.site.register(QueueLength, QueueLengthAdmin)# vim: set fileencoding=utf-8 :
 from django.contrib import admin
 
 import trafficdb.models as models
@@ -127,6 +89,19 @@ class QueueAdmin(admin.ModelAdmin):
         'queueDesc',
     )
     
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    pass
+
+class PostAdmin(admin.ModelAdmin):
+    pass
+
+class CommentAdmin(admin.ModelAdmin):
+    pass
+
+
+    
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
@@ -135,3 +110,7 @@ _register(models.Direction, DirectionAdmin)
 _register(models.QueueType, QueueTypeAdmin)
 _register(models.QueueLength, QueueLengthAdmin)
 _register(models.Queue, QueueAdmin)
+
+_register(models.Category, CategoryAdmin)
+_register(models.Post, PostAdmin)
+_register(models.Comment, CommentAdmin)
