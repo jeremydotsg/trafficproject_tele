@@ -1,23 +1,37 @@
 <!-- blog/templates/blog/index.html -->
 {% extends "trafficdb/base.html" %}
 
-{% block page_title %}
-    <h2>Blog Posts</h2>
-{% endblock page_title %}
-
-{% block page_content %}
-    {% block posts %}
-        {% for post in posts %}
-            <h3><a href="{% url 'trafficdb:blog_detail' post.pk %}">{{ post.title }}</a></h3>
-            <small>
-                {{ post.created_on.date }} | Categories:
-                {% for category in post.categories.all %}
-                    <a href="{% url 'trafficdb:blog_category' category.name %}">
-                        {{ category.name }}
-                    </a>
-                {% endfor %}
-            </small>
-            <p>{{ post.body | slice:":400" }}...</p>
-        {% endfor %}
-    {% endblock posts %}
-{% endblock page_content %}
+<div class="container">
+	{% block page_title %}
+	 <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm bold"><h2 class="text-center">Home and Updates</h2></div> <!-- Added Bootstrap spacing utility class -->
+	{% endblock page_title %}
+	
+	{% block page_content %}
+	    <div class="container"> <!-- Bootstrap container to center the content -->
+	        {% block posts %}
+	            <div class="row"> <!-- Bootstrap row for post cards -->
+	                {% for post in posts %}
+	                    <div class="col-md-4 mb-4"> <!-- Bootstrap column for each post -->
+	                        <div class="card h-100"> <!-- Bootstrap card for each post -->
+	                            <div class="card-body">
+	                                <h3 class="card-title">
+	                                    <a href="{% url 'trafficdb:blog_detail' post.pk %}">{{ post.title }}</a>
+	                                </h3>
+	                                <small class="text-muted">
+	                                    {{ post.created_on.date }} | Categories:
+	                                    {% for category in post.categories.all %}
+	                                        <a href="{% url 'trafficdb:blog_category' category.name %}" class="badge badge-secondary">
+	                                            {{ category.name }}
+	                                        </a>
+	                                    {% endfor %}
+	                                </small>
+	                                <p class="card-text">{{ post.body | slice:":400" }}...</p>
+	                            </div>
+	                        </div>
+	                    </div>
+	                {% endfor %}
+	            </div>
+	        {% endblock posts %}
+	    </div>
+	{% endblock page_content %}
+</div>

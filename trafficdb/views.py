@@ -5,10 +5,15 @@ from django.views import generic
 from django.utils import timezone
 from django.db.models import F, Max, OuterRef, Subquery
 from .models import Queue, Direction, QueueStatus, QueueType, QueueLength, Post, Comment, Category
-from .forms import QueueStatusForm
+from .forms import QueueStatusForm, DivErrorList
 from django.utils.functional import empty
 from datetime import timedelta
 import datetime
+
+# Get the current time
+current_time = timezone.now()
+# Calculate the time one hour ago from the current time
+one_hour_ago = current_time - timedelta(minutes=60)
 
 #Create your views here.
 class IndexView(View):
@@ -24,10 +29,6 @@ class IndexView(View):
             for each_queue in Queue.objects.filter(direction=each_direction).all():
                 print('Queue:' + str(each_queue))
                 # Subquery to get the latest createdTime for each queue
-                # Get the current time
-                current_time = timezone.now()
-                # Calculate the time one hour ago from the current time
-                one_hour_ago = current_time - timedelta(days=365)
                 latest_queue = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).order_by('-createdTime')[:1]
                 # Main query to get the latest queueLength for each queue
                 if not latest_queue:
@@ -57,16 +58,17 @@ def queue_list(request):
 
 def queue_detail(request, queue_id):
     queue = get_object_or_404(Queue, id=queue_id)
-    queue_status = QueueStatus.objects.filter(queue=queue).order_by('-createdTime').first()
+
+    queue_status = QueueStatus.objects.filter(queue=queue,createdTime__gte=one_hour_ago).order_by('-createdTime').first()
     if request.method == 'POST':
-        form = QueueStatusForm(request.POST)
+        form = QueueStatusForm(request.POST,error_class=DivErrorList)
         if form.is_valid():
             new_status = form.save(commit=False)
             new_status.queue = queue
             new_status.save()
             return redirect('trafficdb:queue_detail', queue_id=queue.id)
     else:
-        form = QueueStatusForm()
+        form = QueueStatusForm(error_class=DivErrorList)
     context = {
         'queue': queue,
         'queue_status': queue_status,

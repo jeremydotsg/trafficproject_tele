@@ -1,18 +1,16 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="auto">
-<head>
-  <title>{% block title %}{% endblock %}</title>
-  
-  {% include "trafficdb/static.html" %}
-</head>
-<body>
-	{% include "trafficdb/header.html" %}
+{% extends "trafficdb/base.html" %}
+	{% block page_title %}
 	<div class="container-lg mt-3 px-xs-0 px-sm-0">
-	    <h1 class="mb-3 text-center">Checkpoint Status</h1>
-	    <p class="text-center mb-3">Stay informed about queue updates!</p>
-	    <p class="text-center mb-3">Click the tabs below to view the status.</p>
+		
+	    <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm bold"><h2 class="text-center">Checkpoint Jam or Not?</h2></div>
+	    {% endblock page_title %}
+	    {% block page_content %}
+	    <p class="text-center mb-3">Share and stay informed on the updates!</p>
+	    <p class="text-center mb-3">How to share? Click on the coloured buttons to share the latest queue!</p>
+	    <p class="text-center mb-3">The queue status is aggregated from the queue shared in the past hour.</p>
+	    <div class="card">
 	    <nav>
-		  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+		  <div class="nav nav-pills px-1 py-1" id="nav-tab" role="tablist">
 		  	{% for direction, queues in packed.items %}
 			  	{% if forloop.first %}
 			    	<button class="nav-link active" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="true">{{direction}}</button>
@@ -45,10 +43,7 @@
 	                </ul>
 		  		</div>
 			{% endfor %}
-		  
-		  <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">...</div>
+		</div>
 		</div>
 	</div>
-	{% include "trafficdb/footer.html" %}
-</body>
-</html>
+	{% endblock page_content %}
