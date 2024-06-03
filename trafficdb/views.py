@@ -10,13 +10,17 @@ from django.utils.functional import empty
 from django.db.models import Avg
 from datetime import timedelta
 import datetime
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
 # Get the current time
 current_time = timezone.now()
 # Calculate the time one hour ago from the current time
-one_hour_ago = current_time - timedelta(minutes=1800)
+one_hour_ago = current_time - timedelta(minutes=80)
 
 #Create your views here.
+
+@method_decorator(never_cache, name='dispatch')
 class IndexView(View):
     def get(self,request):
         packed = {}
@@ -42,10 +46,8 @@ class IndexView(View):
             direction_name = Direction.objects.get(id=each_direction).directionName
 
             for each_queue in Queue.objects.filter(direction=each_direction).all():
-                
                 # Subquery to get the latest createdTime for each queue
                 queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__range=(one_hour_ago, current_time)).select_related('queue', 'queueLength')
-        
                 # Calculate the average queueLengthValue for each Queue
                 average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
                 print(average_queue_lengths)
