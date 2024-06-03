@@ -16,7 +16,7 @@ from django.views.decorators.cache import never_cache
 # Get the current time
 current_time = timezone.now()
 # Calculate the time one hour ago from the current time
-one_hour_ago = current_time - timedelta(minutes=80)
+one_hour_ago = current_time - timedelta(minutes=60)
 
 #Create your views here.
 
