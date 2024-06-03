@@ -7,34 +7,53 @@ from django.db.models import F, Max, OuterRef, Subquery
 from .models import Queue, Direction, QueueStatus, QueueType, QueueLength, Post, Comment, Category
 from .forms import QueueStatusForm, DivErrorList
 from django.utils.functional import empty
+from django.db.models import Avg
 from datetime import timedelta
 import datetime
 
 # Get the current time
 current_time = timezone.now()
 # Calculate the time one hour ago from the current time
-one_hour_ago = current_time - timedelta(minutes=60)
+one_hour_ago = current_time - timedelta(minutes=1800)
 
 #Create your views here.
 class IndexView(View):
     def get(self,request):
         packed = {}
         direction_pack = {}
+              
+        # Query to get all QueueStatus entries with their related Queue and QueueLength
+        # that were created within the last hour
+        queue_statuses = QueueStatus.objects.filter(
+            createdTime__range=(one_hour_ago, current_time)
+        ).select_related('queue', 'queueLength')
+        
+        # Calculate the average queueLengthValue for each Queue
+        average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
+        
+        # This will give you a queryset with the queue name and the average queue length
+        for queue_info in average_queue_lengths:
+            print(str(queue_info))
+            
         #Get the number of directions
         for each_direction in Queue.objects.values_list('direction',flat=True).distinct():
             queue_pack = {}
             #Get the queues
             direction_name = Direction.objects.get(id=each_direction).directionName
-            print('Direction:' + str(direction_name))
+
             for each_queue in Queue.objects.filter(direction=each_direction).all():
-                print('Queue:' + str(each_queue))
+                
                 # Subquery to get the latest createdTime for each queue
-                latest_queue = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).order_by('-createdTime')[:1]
+                queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__range=(one_hour_ago, current_time)).select_related('queue', 'queueLength')
+        
+                # Calculate the average queueLengthValue for each Queue
+                average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
+                print(average_queue_lengths)
                 # Main query to get the latest queueLength for each queue
-                if not latest_queue:
+                if not average_queue_lengths:
                     queue_pack[each_queue] = ''
                 else:
-                    for queue_status in latest_queue:
+                    for queue_status in average_queue_lengths:
                         print('Status:' + str(queue_status))
                         queue_pack[each_queue] = queue_status
                 direction_pack[direction_name] = queue_pack
