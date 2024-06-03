@@ -31,7 +31,7 @@ class IndexView(View):
         queue_statuses = QueueStatus.objects.filter(
             createdTime__range=(one_hour_ago, current_time)
         ).select_related('queue', 'queueLength')
-        
+        print(current_time)
         # Calculate the average queueLengthValue for each Queue
         average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
         
@@ -44,13 +44,12 @@ class IndexView(View):
             queue_pack = {}
             #Get the queues
             direction_name = Direction.objects.get(id=each_direction).directionName
-
+            print(direction_name)
             for each_queue in Queue.objects.filter(direction=each_direction).all():
                 # Subquery to get the latest createdTime for each queue
-                queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__range=(one_hour_ago, current_time)).select_related('queue', 'queueLength')
+                queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).select_related('queue', 'queueLength').all()
                 # Calculate the average queueLengthValue for each Queue
-                average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
-                print(average_queue_lengths)
+                average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue')).all()
                 # Main query to get the latest queueLength for each queue
                 if not average_queue_lengths:
                     queue_pack[each_queue] = ''
