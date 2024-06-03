@@ -28,6 +28,7 @@ class QueueLength(models.Model):
     queueLength = models.CharField(max_length=100)
     queueTypeDisplay = models.BooleanField(default=True)
     queueColor = models.CharField(max_length=100, default='')
+    queueLengthValue = models.IntegerField()
     createdTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     modifiedTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     class Meta:
