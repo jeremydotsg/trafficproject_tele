@@ -20,9 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-rhh1+bio5api0wob7u+e#ng^va5yb%@iwa0mmg)krkx4a$adcm'
+RECAPTCHA_PUBLIC_KEY = '6LeBrfEpAAAAAGjFNqMPESpOK8nlU6jp3yeS5jc_'
+RECAPTCHA_PRIVATE_KEY = '6LeBrfEpAAAAAIt70mRTd11iI2b4VpXsXwIVMYLB'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['mygowhere.pythonanywhere.com']
 
@@ -37,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_recaptcha',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +137,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_ROOT = '/home/mygowhere/trafficproject/static'
+RECAPTCHA_REQUIRED_SCORE = 0.85
