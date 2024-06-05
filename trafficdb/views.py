@@ -13,11 +13,6 @@ import datetime
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
-# Get the current time
-current_time = timezone.now()
-# Calculate the time one hour ago from the current time
-one_hour_ago = current_time - timedelta(minutes=60)
-
 #Create your views here.
 
 @method_decorator(never_cache, name='dispatch')
@@ -25,7 +20,12 @@ class IndexView(View):
     def get(self,request):
         packed = {}
         direction_pack = {}
-              
+
+        # Get the current time
+        current_time = timezone.now()
+        # Calculate the time one hour ago from the current time
+        one_hour_ago = current_time - timedelta(minutes=60)
+
         # Query to get all QueueStatus entries with their related Queue and QueueLength
         # that were created within the last hour
         queue_statuses = QueueStatus.objects.filter(
@@ -34,11 +34,11 @@ class IndexView(View):
         print(current_time)
         # Calculate the average queueLengthValue for each Queue
         average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
-        
+
         # This will give you a queryset with the queue name and the average queue length
         for queue_info in average_queue_lengths:
             print(str(queue_info))
-            
+
         #Get the number of directions
         for each_direction in Queue.objects.values_list('direction',flat=True).distinct():
             queue_pack = {}
@@ -78,6 +78,11 @@ def queue_list(request):
 
 def queue_detail(request, queue_id):
     queue = get_object_or_404(Queue, id=queue_id)
+
+    # Get the current time
+    current_time = timezone.now()
+    # Calculate the time one hour ago from the current time
+    one_hour_ago = current_time - timedelta(minutes=60)
 
     queue_status = QueueStatus.objects.filter(queue=queue,createdTime__gte=one_hour_ago).order_by('-createdTime').first()
     if request.method == 'POST':
