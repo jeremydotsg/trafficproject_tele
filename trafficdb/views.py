@@ -28,10 +28,7 @@ class IndexView(View):
 
         # Query to get all QueueStatus entries with their related Queue and QueueLength
         # that were created within the last hour
-        queue_statuses = QueueStatus.objects.filter(
-            createdTime__range=(one_hour_ago, current_time)
-        ).select_related('queue', 'queueLength')
-        print(current_time)
+        queue_statuses = QueueStatus.objects.filter(createdTime__gte=one_hour_ago,queueLength__queueTypeDisplay=True).select_related('queue','queueLength')
         # Calculate the average queueLengthValue for each Queue
         average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
 

@@ -19,15 +19,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
-RECAPTCHA_PUBLIC_KEY = ''
-RECAPTCHA_PRIVATE_KEY = ''
+SECRET_KEY = 'django-insecure-rhh1+bio5api0wob7u+e#ng^va5yb%@iwa0mmg)krkx4a$adcm'
+RECAPTCHA_PUBLIC_KEY = '6LeBrfEpAAAAAGjFNqMPESpOK8nlU6jp3yeS5jc_'
+RECAPTCHA_PRIVATE_KEY = '6LeBrfEpAAAAAIt70mRTd11iI2b4VpXsXwIVMYLB'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost','192.168.1.34']
+ALLOWED_HOSTS = ['mygowhere.pythonanywhere.com']
 
 
 # Application definition
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_recaptcha',
-] 
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,10 +77,20 @@ WSGI_APPLICATION = 'trafficproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'mygowhere$default',
+        'USER': 'mygowhere',
+        'PASSWORD': 'kuku8888my',
+        'HOST': 'mygowhere.mysql.pythonanywhere-services.com',  # Usually 'localhost' or an IP address
+        'PORT': '3306',  # Default MySQL port
     }
 }
 
@@ -125,4 +135,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATIC_ROOT = '/home/mygowhere/trafficproject/static'
 RECAPTCHA_REQUIRED_SCORE = 0.85

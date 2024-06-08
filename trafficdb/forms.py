@@ -13,7 +13,10 @@ class QueueStatusForm(forms.ModelForm):
     class Meta:
         model = QueueStatus
         fields = ['queueLength']  # Assuming 'queueLength' is a field in QueueLength model
-        
+    def __init__(self, *args, **kwargs):
+        super(QueueStatusForm, self).__init__(*args, **kwargs)
+        self.fields['queueLength'].queryset = QueueLength.objects.filter(queueTypeDisplay=True)
+
 class DivErrorList(ErrorList):
     def __str__(self):
         return self.as_divs()

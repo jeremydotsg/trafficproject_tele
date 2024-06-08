@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Direction, Queue, QueueType, QueueLength,QueueStatus    
+from .models import Direction, Queue, QueueType, QueueLength,QueueStatus
 from .models import Category, Comment, Post
 
 from django.contrib import admin
@@ -88,8 +88,22 @@ class QueueAdmin(admin.ModelAdmin):
         'queueName',
         'queueDesc',
     )
-    
 
+class QueueStatusAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'queue',
+        'queueLength',
+        'createdTime',
+        'modifiedTime',
+    )
+    list_filter = (
+        'id',
+        'queue',
+        'queueLength',
+        'createdTime',
+        'modifiedTime',
+    )
 
 class CategoryAdmin(admin.ModelAdmin):
     pass
@@ -100,8 +114,6 @@ class PostAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     pass
 
-
-    
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
@@ -110,6 +122,7 @@ _register(models.Direction, DirectionAdmin)
 _register(models.QueueType, QueueTypeAdmin)
 _register(models.QueueLength, QueueLengthAdmin)
 _register(models.Queue, QueueAdmin)
+_register(models.QueueStatus, QueueStatusAdmin)
 
 _register(models.Category, CategoryAdmin)
 _register(models.Post, PostAdmin)
