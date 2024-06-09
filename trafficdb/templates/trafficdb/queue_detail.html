@@ -3,41 +3,31 @@
     <div class="container-lg mt-3 px-xs-0 px-sm-0">
     	<div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm bold"><h2 class="text-center">Checkpoint Jam or Not?</h2></div>
  		<p class="text-center mb-3">Help your fellow commuters by updating the status!</p>
- 		<p class="text-center mb-3">If the status is not correct, update in the second box.</p>
 	    {% endblock page_title %}
 	    {% block page_content %}
         <div class="card shadow-sm">
-        	<h2 class="card-header ">Queue for {{ queue.queueName }}</h2>	
-           		 <div class="card-body">
-                 
-                    <div class="my-0 p-3 rounded shadow-sm">
-                        <h5 class="border-bottom pb-2 mb-0">Latest updated at {{ queue_status.createdTime }}</h5>
-                        <div class="d-flex text-muted pt-3 border-bottom">
-                            <p class="pb-3 mb-0 small lh-sm card-text">
-                                {% if queue_status %}
-	                        		<button type="button" class="btn  {{ queue_status.queueLength.queueColor }} float-right">{{ queue_status.queueLength }}</button>
+        	<h2 class="card-header bg-purple text-white">{{ queue.queueName }} 
+        						{% if queue_status %} 
+        						<button type="button" class="btn {{ queue_status.queueLength.queueColor }} ">{{ queue_status.queueLength }}</button>
 	                       		 {% else %}
 	                        		<button type="button" class="btn  btn-light float-right">No data</button>
-	                       		 {% endif %} 
-                            </p><br/>
-                        </div>
+	                       		 {% endif %} </h2>
+           		 <div class="card-body">
                         <h5 class="border-bottom pb-2 mb-0">Incorrect? Update it here!</h5>
                         <div class="d-flex text-muted pt-3 border-bottom">
                             <p class="pb-3 mb-0 small lh-sm card-text">
 		                    <form method="post" class="form">
 		                        {% csrf_token %}
 		                        <div class="mb-3">
-		                            {{ form.as_p }}
+		                            {{ form.as_div }}
 		                        </div>
 		                        <button type="submit" class="btn btn-primary">Update Status</button>
 		                        <br/><br/>
 		                    </form>
 		                </div>
+		                <h5 class="pb-2 mb-0">{% if queue_status %} Last update at {{ queue_status.createdTime }} {% endif %}</h5>
                 </div>
             </div>
         </div>
         <a href="{% url 'trafficdb:index' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
-        
-    </div>
-                    This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy">Privacy Policy</a> and <a href="https://policies.google.com/terms">Terms of Service</a> apply.
-	{% endblock page_content %}
+    </div>{% endblock page_content %}

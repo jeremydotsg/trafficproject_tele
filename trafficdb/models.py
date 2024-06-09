@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
 import datetime
 
 # Create your models here.
@@ -49,6 +50,7 @@ class Queue(models.Model):
 class QueueStatus(models.Model):
     queue = models.ForeignKey(Queue, on_delete=models.CASCADE)
     queueLength = models.ForeignKey(QueueLength, on_delete=models.CASCADE)
+    queueIP = models.CharField(max_length=50,default=None, blank=True, null=True)
     createdTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     modifiedTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     class Meta:
@@ -58,6 +60,14 @@ class QueueStatus(models.Model):
     def was_published_recently(self):
         now = timezone.now()
         return now - datetime.timedelta(hour=1) <= self.createdTime <= now
+    @classmethod
+    def has_reached_update_limit(cls, ip_address):
+        # Count the number of updates from the IP in the last hour
+        recent_updates_count = cls.objects.filter(
+            queueIP=ip_address,
+            modifiedTime__gte=timezone.now() - timedelta(hours=1)
+        ).count()
+        return recent_updates_count >= 5
 
 #For Blog
 # blog/models.py

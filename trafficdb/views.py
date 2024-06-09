@@ -45,6 +45,7 @@ class IndexView(View):
             for each_queue in Queue.objects.filter(direction=each_direction).all():
                 # Subquery to get the latest createdTime for each queue
                 queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).select_related('queue', 'queueLength').all()
+                print(queue_statuses)
                 # Calculate the average queueLengthValue for each Queue
                 average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue')).all()
                 # Main query to get the latest queueLength for each queue
@@ -83,14 +84,22 @@ def queue_detail(request, queue_id):
 
     queue_status = QueueStatus.objects.filter(queue=queue,createdTime__gte=one_hour_ago).order_by('-createdTime').first()
     if request.method == 'POST':
-        form = QueueStatusForm(request.POST,error_class=DivErrorList)
+        form = QueueStatusForm(request.POST, error_class=DivErrorList)
+        ip_address = get_client_ip(request)
         if form.is_valid():
-            new_status = form.save(commit=False)
-            new_status.queue = queue
-            new_status.save()
-            return redirect('trafficdb:queue_detail', queue_id=queue.id)
+            if not QueueStatus.has_reached_update_limit(ip_address):
+                new_status = form.save(commit=False)
+                new_status.queueIP = ip_address
+                new_status.queue = queue
+                new_status.save()
+                return redirect('trafficdb:queue_detail', queue_id=queue.id)
+            else:
+                # Pass the form with errors back to the template
+                form = QueueStatusForm(error_class=DivErrorList)
+                print('Error >= 5')
     else:
         form = QueueStatusForm(error_class=DivErrorList)
+
     context = {
         'queue': queue,
         'queue_status': queue_status,
@@ -142,3 +151,21 @@ def blog_detail(request, pk):
     }
 
     return render(request, "trafficdb/detail.html", context)
+
+def get_client_ip(request):
+    """Get the client IP address from the request object."""
+    ip = None
+    if request:
+        real_ip = request.META.get("X_REAL_IP", "")
+        remote_ip = request.META.get("REMOTE_ADDR", "")
+        forwarded_ip = request.META.get("HTTP_X_FORWARDED_FOR", "")
+        print('Views - Real IP: ' + str(real_ip) + ', Remote IP: ' + str(remote_ip) + ', Forwarded IP: ' + str(forwarded_ip))
+        if not real_ip:
+            if not remote_ip:
+                ip = forwarded_ip
+            else:
+                ip = remote_ip
+        else:
+            ip = real_ip
+        return ip
+    return ip

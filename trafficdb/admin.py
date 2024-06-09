@@ -50,13 +50,15 @@ class QueueLengthAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'queueLength',
-        'queueTypeDisplay',
         'queueColor',
+        'queueLengthValue',
+        'queueTypeDisplay',
         'createdTime',
         'modifiedTime',
     )
     list_filter = (
         'queueTypeDisplay',
+        'queueLengthValue',
         'createdTime',
         'modifiedTime',
         'id',
@@ -94,12 +96,14 @@ class QueueStatusAdmin(admin.ModelAdmin):
         'id',
         'queue',
         'queueLength',
+        'queueIP',
         'createdTime',
         'modifiedTime',
     )
     list_filter = (
         'id',
         'queue',
+        'queueIP',
         'queueLength',
         'createdTime',
         'modifiedTime',
