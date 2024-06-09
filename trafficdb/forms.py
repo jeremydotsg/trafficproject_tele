@@ -46,10 +46,10 @@ def get_remote_ip(self):
                 print('Forms - Real IP: ' + str(real_ip) + ', Remote IP: ' + str(remote_ip) + ', Forwarded IP: ' + str(forwarded_ip))
                 ip = None
                 if not real_ip:
-                    if not remote_ip:
-                        ip = forwarded_ip
-                    else:
+                    if not forwarded_ip:
                         ip = remote_ip
+                    else:
+                        ip = forwarded_ip
                 else:
                     ip = real_ip
                 return ip

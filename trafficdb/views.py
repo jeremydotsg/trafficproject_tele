@@ -161,10 +161,10 @@ def get_client_ip(request):
         forwarded_ip = request.META.get("HTTP_X_FORWARDED_FOR", "")
         print('Views - Real IP: ' + str(real_ip) + ', Remote IP: ' + str(remote_ip) + ', Forwarded IP: ' + str(forwarded_ip))
         if not real_ip:
-            if not remote_ip:
-                ip = forwarded_ip
-            else:
+            if not forwarded_ip:
                 ip = remote_ip
+            else:
+                ip = forwarded_ip
         else:
             ip = real_ip
         return ip
