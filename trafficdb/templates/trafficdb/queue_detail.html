@@ -19,7 +19,7 @@
 		                    <form method="post" class="form">
 		                        {% csrf_token %}
 		                        <div class="mb-3">
-		                            {{ form.as_div }}
+		                            {{ form.as_p }}
 		                        </div>
 		                        <button type="submit" class="btn btn-primary">Update Status</button>
 		                        <br/><br/>
