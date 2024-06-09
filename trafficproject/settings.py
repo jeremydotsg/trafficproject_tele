@@ -19,9 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
-RECAPTCHA_PUBLIC_KEY = ''
-RECAPTCHA_PRIVATE_KEY = ''
+SECRET_KEY = 'django-insecure-rhh1+bio5api0wob7u+e#ng^va5yb%@iwa0mmg)krkx4a$adcm'
+RECAPTCHA_PUBLIC_KEY = '6LeBrfEpAAAAAGjFNqMPESpOK8nlU6jp3yeS5jc_'
+RECAPTCHA_PRIVATE_KEY = '6LeBrfEpAAAAAIt70mRTd11iI2b4VpXsXwIVMYLB'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'trafficdb.middleware.BlockNonLocalMiddleware',
 ]
 
 ROOT_URLCONF = 'trafficproject.urls'
@@ -88,7 +89,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mygowhere$default',
         'USER': 'mygowhere',
-        'PASSWORD': '',
+        'PASSWORD': 'kuku8888my',
         'HOST': 'mygowhere.mysql.pythonanywhere-services.com',  # Usually 'localhost' or an IP address
         'PORT': '3306',  # Default MySQL port
     }
