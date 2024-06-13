@@ -87,7 +87,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mygowhere$default',
-        'USER': 'mygowhere',
+        'USER': '',
         'PASSWORD': '',
         'HOST': 'mygowhere.mysql.pythonanywhere-services.com',  # Usually 'localhost' or an IP address
         'PORT': '3306',  # Default MySQL port
