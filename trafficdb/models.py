@@ -17,6 +17,7 @@ class Direction(models.Model):
 class QueueType(models.Model):
     queueTypeName = models.CharField(max_length=100)
     queueTypeDisplay = models.BooleanField(default=True)
+    queueTypeDisplayOrder = models.IntegerField(default=0)
     createdTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     modifiedTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     class Meta:
@@ -59,7 +60,7 @@ class QueueStatus(models.Model):
         return  str(self.queue) + ' - ' + str(self.queueLength)
     def was_published_recently(self):
         now = timezone.now()
-        return now - datetime.timedelta(hour=1) <= self.createdTime <= now
+        return now - datetime.timedelta(minutes=30) <= self.createdTime <= now
     @classmethod
     def has_reached_update_limit(cls, ip_address):
         # Count the number of updates from the IP in the last hour

@@ -14,7 +14,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
 #Create your views here.
-
 @method_decorator(never_cache, name='dispatch')
 class IndexView(View):
     def get(self,request):
@@ -26,43 +25,80 @@ class IndexView(View):
         # Calculate the time one hour ago from the current time
         one_hour_ago = current_time - timedelta(minutes=60)
 
-        # Query to get all QueueStatus entries with their related Queue and QueueLength
-        # that were created within the last hour
-        queue_statuses = QueueStatus.objects.filter(createdTime__gte=one_hour_ago,queueLength__queueTypeDisplay=True).select_related('queue','queueLength')
-        # Calculate the average queueLengthValue for each Queue
-        average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
+        # Get the number of directions
+        for each_direction in Direction.objects.all():
+            queue_type_pack = {}
+            # Get the queue types
+            for each_queue_type in QueueType.objects.filter(queueTypeDisplay=True).order_by('-queueTypeDisplayOrder').all():
+                queue_pack = {}
+                # Get the queues
+                for each_queue in Queue.objects.filter(direction=each_direction, queueType=each_queue_type).all():
+                    # Subquery to get the latest createdTime for each queue
+                    queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).select_related('queue', 'queueLength').all()
+                    # Calculate the average queueLengthValue for each Queue
+                    average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue')).all()
+                    # Main query to get the latest queueLength for each queue
+                    if not average_queue_lengths:
+                        queue_pack[each_queue] = ''
+                    else:
+                        for queue_status in average_queue_lengths:
+                            queue_pack[each_queue] = queue_status
+                queue_type_pack[each_queue_type] = queue_pack
+            direction_pack[each_direction.directionName] = queue_type_pack
 
-        # This will give you a queryset with the queue name and the average queue length
-        for queue_info in average_queue_lengths:
-            print(str(queue_info))
-
-        #Get the number of directions
-        for each_direction in Queue.objects.values_list('direction',flat=True).distinct():
-            queue_pack = {}
-            #Get the queues
-            direction_name = Direction.objects.get(id=each_direction).directionName
-            print(direction_name)
-            for each_queue in Queue.objects.filter(direction=each_direction).all():
-                # Subquery to get the latest createdTime for each queue
-                queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).select_related('queue', 'queueLength').all()
-                print(queue_statuses)
-                # Calculate the average queueLengthValue for each Queue
-                average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue')).all()
-                # Main query to get the latest queueLength for each queue
-                if not average_queue_lengths:
-                    queue_pack[each_queue] = ''
-                else:
-                    for queue_status in average_queue_lengths:
-                        print('Status:' + str(queue_status))
-                        queue_pack[each_queue] = queue_status
-                direction_pack[direction_name] = queue_pack
-
-        #print(direction_pack)
         data = {
             'packed': direction_pack
         }
-        #print(data)
         return render(request, 'trafficdb/index.html', data)
+
+# @method_decorator(never_cache, name='dispatch')
+# class IndexView(View):
+#     def get(self,request):
+#         packed = {}
+#         direction_pack = {}
+#
+#         # Get the current time
+#         current_time = timezone.now()
+#         # Calculate the time one hour ago from the current time
+#         one_hour_ago = current_time - timedelta(minutes=60)
+#
+#         # Query to get all QueueStatus entries with their related Queue and QueueLength
+#         # that were created within the last hour
+#         queue_statuses = QueueStatus.objects.filter(createdTime__gte=one_hour_ago,queueLength__queueTypeDisplay=True).select_related('queue','queueLength')
+#         # Calculate the average queueLengthValue for each Queue
+#         average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
+#
+#         # This will give you a queryset with the queue name and the average queue length
+#         for queue_info in average_queue_lengths:
+#             print(str(queue_info))
+#
+#         #Get the number of directions
+#         for each_direction in Queue.objects.values_list('direction',flat=True).distinct():
+#             queue_pack = {}
+#             #Get the queues
+#             direction_name = Direction.objects.get(id=each_direction).directionName
+#             print(direction_name)
+#             for each_queue in Queue.objects.filter(direction=each_direction).all():
+#                 # Subquery to get the latest createdTime for each queue
+#                 queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).select_related('queue', 'queueLength').all()
+#                 print(queue_statuses)
+#                 # Calculate the average queueLengthValue for each Queue
+#                 average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue')).all()
+#                 # Main query to get the latest queueLength for each queue
+#                 if not average_queue_lengths:
+#                     queue_pack[each_queue] = ''
+#                 else:
+#                     for queue_status in average_queue_lengths:
+#                         print('Status:' + str(queue_status))
+#                         queue_pack[each_queue] = queue_status
+#                 direction_pack[direction_name] = queue_pack
+#
+#         #print(direction_pack)
+#         data = {
+#             'packed': direction_pack
+#         }
+#         #print(data)
+#         return render(request, 'trafficdb/index.html', data)
 
 
 def queue_list(request):

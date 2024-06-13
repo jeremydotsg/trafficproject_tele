@@ -68,7 +68,19 @@ class QueueLengthAdmin(admin.ModelAdmin):
 
 class QueueStatusInline(admin.TabularInline):
     model = QueueStatus
-    choice = 10
+    extra = 2
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super(QueueStatusInline, self).get_formset(request, obj, **kwargs)
+
+        # Define a custom formset class
+        class BaseFormSet(formset):
+            def get_queryset(self):
+                qs = super().get_queryset()
+                # Only return the latest 5 QueueStatus instances
+                return qs.order_by('-createdTime')[:5]
+
+        return BaseFormSet
 
 class QueueAdmin(admin.ModelAdmin):
     inlines=[QueueStatusInline]
