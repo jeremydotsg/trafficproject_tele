@@ -44,9 +44,9 @@
 								{% elif status.averageLength <= 4 %}
 								<button type="button" class="btn btn-danger btn-sm float-end">Long Queue</button>
 								{% elif status.averageLength <= 5 %}
-								<button type="button" class="btn btn-dark btn-sm float-end">Full Queue</button>
+								<button type="button" class="btn btn-full btn-sm float-end">Full Queue</button>
 								{% else %}
-								<button type="button" class="btn btn-light btn-sm float-end">No data</button>
+								<button type="button" class="btn btn-secondary btn-sm float-end">No data</button>
 								{% endif %}
 							</a>
 						</li>
