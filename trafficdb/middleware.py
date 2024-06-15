@@ -20,12 +20,16 @@ class BlockNonLocalMiddleware:
                     ip = forwarded_ip
             else:
                 ip = real_ip
+        # Add in cron-job IP
+        ip_list = ["116.203.129.16", "116.203.134.67", "23.88.105.37", "128.140.8.200"]
+        if ip in ip_list:
+            return self.get_response(request)
         
         # Check the IP's country using an IP geolocation API
-        print(ip)
         response = requests.get(f'http://ip-api.com/json/{ip}')
         if response.status_code == 200:
             country = response.json().get('country')
+            print(ip)
             print(country)
             if country not in ['Singapore','Malaysia']:
                 return HttpResponseForbidden('<h1>Access Denied</h1>')
