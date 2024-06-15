@@ -99,3 +99,14 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.author} on '{self.post}'"
+    
+
+class BusArrival(models.Model):
+    bus_stop = models.CharField(max_length=10)
+    service_no = models.CharField(max_length=10)
+    operator = models.CharField(max_length=10)
+    next_bus = models.JSONField()
+    next_bus_2 = models.JSONField()
+    next_bus_3 = models.JSONField()
+    createdTime = models.DateTimeField(auto_now_add=True)
+    modifiedTime = models.DateTimeField(auto_now=True)

@@ -1,17 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.views import View
-from django.views import generic
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.views import View, generic
 from django.utils import timezone
-from django.db.models import F, Max, OuterRef, Subquery
-from .models import Queue, Direction, QueueStatus, QueueType, QueueLength, Post, Comment, Category
+from django.db.models import F, Max, OuterRef, Subquery, Avg
+from .models import Queue, Direction, QueueStatus, QueueType, QueueLength, Post, Comment, Category, BusArrival
 from .forms import QueueStatusForm, DivErrorList
 from django.utils.functional import empty
-from django.db.models import Avg
 from datetime import timedelta
 import datetime
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+import requests
 
 #Create your views here.
 @method_decorator(never_cache, name='dispatch')
@@ -205,3 +204,42 @@ def get_client_ip(request):
             ip = real_ip
         return ip
     return ip
+
+def get_bus_arrivals(request):
+    if request.method == 'GET':
+        # The request is a POST request
+        api_key = request.GET.get('secret_api_key')
+        api_key_token = 'zCqKd62JYUOrtfTXiECJuC4yJiJYlFxj9vGkFtdaKP6fjfblABXXGxUe832IrjZc'
+        if api_key_token == api_key:
+            send_bus_request('46101')
+            send_bus_request('46211')
+            send_bus_request('46219')
+            send_bus_request('46109')
+            return HttpResponse('Lorem-Ipsum')
+        else:
+            return HttpResponseForbidden('<h1>Access Denied</h1>')
+    else:
+        return HttpResponseForbidden('<h1>Access Denied</h1>')
+
+def send_bus_request(bus_stop_code):
+    # Get the current time
+    current_time = timezone.now()
+    # Calculate the time one hour ago from the current time
+    mins_ago = current_time - timedelta(minutes=1)
+    
+    if not BusArrival.objects.filter(bus_stop=bus_stop_code,createdTime__gte=mins_ago):
+        headers = {'AccountKey': 'v8nXM0XUTOie45jSW9tLzA=='}
+        response = requests.get(f'http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode={bus_stop_code}', headers=headers)
+        data = response.json()
+    
+        for service in data['Services']:
+            bus_arrival = BusArrival(bus_stop = data['BusStopCode'],
+                service_no=service['ServiceNo'],
+                operator=service['Operator'],
+                next_bus=service['NextBus'],
+                next_bus_2=service['NextBus2'],
+                next_bus_3=service['NextBus3'],
+            )
+            bus_arrival.save()
+    else:
+        print("BusArrival:: Last queried within 2 mins. Request not sent.")
