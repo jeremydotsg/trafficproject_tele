@@ -1,7 +1,11 @@
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware, get_default_timezone
+from dateutil import parser
 import datetime
+import pytz
 
 # Create your models here.
 
@@ -100,6 +104,9 @@ class Comment(models.Model):
     def __str__(self):
         return f"{self.author} on '{self.post}'"
     
+class BusStop(models.Model):
+    bus_stop = models.CharField(max_length=10)
+    bus_stop_name = models.CharField(max_length=255)
 
 class BusArrival(models.Model):
     bus_stop = models.CharField(max_length=10)
@@ -110,3 +117,37 @@ class BusArrival(models.Model):
     next_bus_3 = models.JSONField()
     createdTime = models.DateTimeField(auto_now_add=True)
     modifiedTime = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.service_no} on '{self.bus_stop}' at {self.createdTime}"
+    
+    def arrival_next_bus(self):
+        estimated_arrival = self.next_bus.get('EstimatedArrival')
+        if estimated_arrival:
+            # Convert the string to a datetime object
+            estimated_arrival = parser.parse(estimated_arrival)
+            # Calculate the difference
+            diff = estimated_arrival - self.createdTime.astimezone(pytz.timezone('Asia/Singapore'))
+            # If the difference is negative, return 0
+            return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
+        return None
+    def arrival_next_bus2(self):
+        estimated_arrival = self.next_bus_2.get('EstimatedArrival')
+        if estimated_arrival:
+            # Convert the string to a datetime object
+            estimated_arrival = parser.parse(estimated_arrival)
+            # Calculate the difference
+            diff = estimated_arrival - self.createdTime.astimezone(pytz.timezone('Asia/Singapore'))
+            # If the difference is negative, return 0
+            return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
+        return None
+    def arrival_next_bus3(self):
+        estimated_arrival = self.next_bus_3.get('EstimatedArrival')
+        if estimated_arrival:
+            # Convert the string to a datetime object
+            estimated_arrival = parser.parse(estimated_arrival)
+            # Calculate the difference
+            diff = estimated_arrival - self.createdTime.astimezone(pytz.timezone('Asia/Singapore'))
+            # If the difference is negative, return 0
+            return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
+        return None

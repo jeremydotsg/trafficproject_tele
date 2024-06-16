@@ -1,0 +1,46 @@
+{% extends 'trafficdb/base.html' %}
+
+	{% block page_content %}
+	
+	  <div class="container mt-3">
+	    <h2>Next Buses by Bus Stop</h2>
+	    {% for bus in bus_stops %}
+	      <div class="card mb-0">
+	        {% ifchanged bus.bus_stop %}
+	          <div class="card-header">
+	            <h3>{{ bus.bus_stop_name }}</h3>
+	          </div>
+	        {% endifchanged %}
+	        <div class="card-body mb-0">
+	          {% ifchanged bus.service_no %}<span class="badge bg-secondary">{{ bus.service_no }}</span>{% endifchanged %}
+	            {% if bus.next_bus.Load %}{{ bus.arrival_next_bus }}{% endif %}
+	            {% if bus.next_bus.Load == 'SEA' %}
+	              <span class="badge bg-success"> </span>
+	            {% elif bus.next_bus.Load == 'SDA' %}
+	              <span class="badge bg-warning"> </span>
+	            {% elif bus.next_bus.Load == 'LSD' %}
+	              <span class="badge bg-danger"> </span>
+	            {% endif %}
+	            {% if bus.next_bus_2.Load %}{{ bus.arrival_next_bus2 }}{% endif %}
+	            {% if bus.next_bus_2.Load == 'SEA' %}
+	              <span class="badge bg-success"> </span>
+	            {% elif bus.next_bus_2.Load == 'SDA' %}
+	              <span class="badge bg-warning"> </span>
+	            {% elif bus.next_bus_2.Load == 'LSD' %}
+	              <span class="badge bg-danger"> </span>
+	            {% endif %}
+	            {% if bus.next_bus_3.Load %}{{ bus.arrival_next_bus3 }}{% endif %}
+	            {% if bus.next_bus_3.Load == 'SEA' %}
+	              <span class="badge bg-success"> </span>
+	            {% elif bus.next_bus_3.Load == 'SDA' %}
+	              <span class="badge bg-warning"> </span>
+	            {% elif bus.next_bus_3.Load == 'LSD' %}
+	              <span class="badge bg-danger"> </span>
+	            {% endif %}
+	        </div>
+	      </div>
+	    {% endfor %}
+	    <span class="badge bg-success">Seats Available</span><span class="badge bg-warning">Standing Available</span><span class="badge bg-danger">Limited Standing</span>
+	  </div>
+	  
+{% endblock page_content %}

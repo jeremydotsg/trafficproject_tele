@@ -5,15 +5,17 @@ from django_recaptcha.widgets import ReCaptchaV3
 from django_recaptcha.fields import ReCaptchaField
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
+import logging
 
 import sys
 
+logger = logging.getLogger('trafficdb')
 class QueueStatusForm(forms.ModelForm):
-    # captcha = ReCaptchaField(widget = ReCaptchaV3(action='queue_update'), error_messages={
-    #         'required': 'CAPTCHA Invalid.',
-    #         'invalid': 'CAPTCHA Invalid.',
-    #         'captcha_invalid': 'CAPTCHA Invalid.'
-    #     })
+    captcha = ReCaptchaField(widget = ReCaptchaV3(action='queue_update'), error_messages={
+            'required': 'CAPTCHA Invalid.',
+            'invalid': 'CAPTCHA Invalid.',
+            'captcha_invalid': 'CAPTCHA Invalid.'
+        })
     class Meta:
         model = QueueStatus
         fields = ['queueLength']  # Assuming 'queueLength' is a field in QueueLength model
@@ -23,7 +25,7 @@ class QueueStatusForm(forms.ModelForm):
     def clean(self):
         queue_ip = get_remote_ip(self)
         if QueueStatus.has_reached_update_limit(queue_ip):
-            print('IP > 5 times')
+            logger.info('QueueStatusForm :: IP > 5 times')
             raise ValidationError('Too many updates, try again later.')
 
 class DivErrorList(ErrorList):
@@ -43,7 +45,7 @@ def get_remote_ip(self):
                 real_ip = request.META.get("X_REAL_IP", "")
                 remote_ip = request.META.get("REMOTE_ADDR", "")
                 forwarded_ip = request.META.get("HTTP_X_FORWARDED_FOR", "")
-                print('Forms - Real IP: ' + str(real_ip) + ', Remote IP: ' + str(remote_ip) + ', Forwarded IP: ' + str(forwarded_ip))
+                logger.info('Forms - Real IP: ' + str(real_ip) + ', Remote IP: ' + str(remote_ip) + ', Forwarded IP: ' + str(forwarded_ip))
                 ip = None
                 if not real_ip:
                     if not forwarded_ip:
