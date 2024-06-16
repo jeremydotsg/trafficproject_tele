@@ -22,15 +22,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'abcd1234devkey'
+SECRET_KEY = ''
 RECAPTCHA_PUBLIC_KEY = ''
 RECAPTCHA_PRIVATE_KEY = ''
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['mygowhere.pythonanywhere.com']
 
 
 # Application definition
@@ -107,7 +107,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'E:/development/sources/logs/info.log',
+            'filename': 'path/to/logs/info.log',
             'formatter': 'asia_singapore',
             'when': 'D',  # Rotate daily
             'interval': 1,  # Every 1 day
@@ -116,7 +116,7 @@ LOGGING = {
         'trafficdb_file': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'E:/development/sources/logs/app.log',
+            'filename': 'path/to/logs/app.log',
             'formatter': 'asia_singapore',
             'when': 'D',  # Rotate daily
             'interval': 1,  # Every 1 day
@@ -125,7 +125,7 @@ LOGGING = {
         'trafficdb_middleware_file': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'E:/development/sources/logs/middleware.log',
+            'filename': 'path/to/logs/middleware.log',
             'formatter': 'asia_singapore',
             'when': 'D',  # Rotate daily
             'interval': 1,  # Every 1 day
