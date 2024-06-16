@@ -125,7 +125,7 @@ def queue_list(request):
     return render(request, 'trafficdb/queue_list.html', context)
 
 def queue_detail(request, queue_id):
-    logger.info('Queue :: Start ' + queue_id)
+    logger.info('Queue :: Start ' + str(queue_id))
     queue = get_object_or_404(Queue, id=queue_id)
 
     # Get the current time
@@ -228,7 +228,7 @@ def get_bus_arrivals(request):
     if request.method == 'GET':
         # The request is a POST request
         api_key = request.GET.get('secret_api_key')
-        api_key_token = ''
+        api_key_token = 'zCqKd62JYUOrtfTXiECJuC4yJiJYlFxj9vGkFtdaKP6fjfblABXXGxUe832IrjZc'
         if api_key_token == api_key:
             send_bus_request('46101')
             send_bus_request('46211')
@@ -344,21 +344,31 @@ def send_bus_request(bus_stop_code):
 @login_required
 def bus_stop_view(request):
     logger.info('BusStop :: Start ')
-    get_bus_arrivals_web()
+    #get_bus_arrivals_web()
     tz = pytz.timezone('Asia/Singapore')
     now = timezone.now().astimezone(tz)
-    two_minutes_ago = now - timedelta(minutes=2)
-    latest = BusArrival.objects.filter(
-        bus_stop=OuterRef('bus_stop'), 
-        service_no=OuterRef('service_no'), 
-        createdTime__gte=two_minutes_ago
-    ).order_by('-createdTime')
+    two_minutes_ago = now - timedelta(seconds=58)
+    
+    # Annotate the latest createdTime for each bus_stop and service_no combination
+    latest_times = BusArrival.objects.filter(
+        createdTime__lte=two_minutes_ago
+    ).values(
+        'bus_stop', 'service_no'
+    ).annotate(
+        latest_time=Max('createdTime')
+    )
+    
+    # Filter the BusArrival objects based on the annotated latest times
     bus_stops = BusArrival.objects.filter(
-        createdTime=Subquery(latest.values('createdTime')[:1])
-    ).filter(
         createdTime__lte=now,
         createdTime__gte=two_minutes_ago
-    ).order_by('bus_stop', 'service_no')
+    ).filter(
+        id__in=latest_times.values('id')
+    ).order_by(
+        'bus_stop', 'service_no'
+    )
+    
+    # Now each arrival in bus_stops has the related BusStop data pre-fetched
     for arrival in bus_stops:
         # Get the BusStop entry with the same bus_stop code
         bus_stop_entry = get_object_or_404(BusStop, bus_stop=arrival.bus_stop)
