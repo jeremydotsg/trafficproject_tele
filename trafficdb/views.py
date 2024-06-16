@@ -345,35 +345,23 @@ def send_bus_request(bus_stop_code):
 def bus_stop_view(request):
     logger.info('BusStop :: Start ')
     #get_bus_arrivals_web()
-    tz = pytz.timezone('Asia/Singapore')
-    now = timezone.now().astimezone(tz)
-    two_minutes_ago = now - timedelta(seconds=120)
-    
-    # Annotate the latest createdTime for each bus_stop and service_no combination
-    latest_times = BusArrival.objects.filter(
-        createdTime__lte=two_minutes_ago
-    ).values(
-        'bus_stop', 'service_no'
-    ).annotate(
+    arrivals = []
+    # First, we get the latest 'modifiedTime' for each 'bus_stop' and 'service_no'
+    latest_times = BusArrival.objects.values('bus_stop', 'service_no').annotate(
         latest_time=Max('createdTime')
     )
-    
-    # Filter the BusArrival objects based on the annotated latest times
-    bus_stops = BusArrival.objects.filter(
-        createdTime__lte=now,
-        createdTime__gte=two_minutes_ago
-    ).filter(
-        id__in=latest_times.values('id')
-    ).order_by(
-        'bus_stop', 'service_no'
-    )
-    
-    # Now each arrival in bus_stops has the related BusStop data pre-fetched
-    for arrival in bus_stops:
-        # Get the BusStop entry with the same bus_stop code
-        bus_stop_entry = get_object_or_404(BusStop, bus_stop=arrival.bus_stop)
-        # Add the friendly name as an attribute to the arrival object
-        arrival.bus_stop_name = bus_stop_entry.bus_stop_name
+    for entry in latest_times:
+        latest_record = BusArrival.objects.filter(
+            bus_stop=entry['bus_stop'], 
+            service_no=entry['service_no'], 
+            createdTime=entry['latest_time']
+        ).first()
+        if latest_record:
+            # Get the BusStop entry with the same bus_stop code
+            bus_stop_entry = get_object_or_404(BusStop, bus_stop=latest_record.bus_stop)
+            # Add the friendly name as an attribute to the latest_record object
+            latest_record.bus_stop_name = bus_stop_entry.bus_stop_name
+            arrivals.append(latest_record)
         
     logger.info('BusStop :: End ')
-    return render(request, 'trafficdb/bus_stop.html', {'bus_stops': bus_stops})
+    return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
