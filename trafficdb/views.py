@@ -347,7 +347,7 @@ def bus_stop_view(request):
     #get_bus_arrivals_web()
     tz = pytz.timezone('Asia/Singapore')
     now = timezone.now().astimezone(tz)
-    two_minutes_ago = now - timedelta(seconds=58)
+    two_minutes_ago = now - timedelta(seconds=120)
     
     # Annotate the latest createdTime for each bus_stop and service_no combination
     latest_times = BusArrival.objects.filter(
