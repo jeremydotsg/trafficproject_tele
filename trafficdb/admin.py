@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Direction, Queue, QueueType, QueueLength,QueueStatus
-from .models import Category, Comment, Post, BusArrival
+from .models import Category, Comment, Post, BusArrival, BusStop
 
 from django.contrib import admin
 
@@ -133,7 +133,11 @@ class CommentAdmin(admin.ModelAdmin):
 class BusArrivalAdmin(admin.ModelAdmin):
     list_display = ('bus_stop','service_no', 'operator', 'next_bus', 'next_bus_2', 'next_bus_3','createdTime','modifiedTime')
 
-
+@admin.register(BusStop)
+class BusStopAdmin(admin.ModelAdmin):
+    list_display = ('bus_stop', 'bus_stop_name')
+    search_fields = ('bus_stop', 'bus_stop_name')
+    
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
 
