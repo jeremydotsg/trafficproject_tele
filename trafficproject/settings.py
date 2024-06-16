@@ -10,6 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 from pathlib import Path
+import logging
+import pytz
+from datetime import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,15 +22,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
+SECRET_KEY = 'abcd1234devkey'
 RECAPTCHA_PUBLIC_KEY = ''
 RECAPTCHA_PRIVATE_KEY = ''
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['mygowhere.pythonanywhere.com']
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -51,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'trafficdb.middleware.BlockNonLocalMiddleware',
 ]
 
 ROOT_URLCONF = 'trafficproject.urls'
@@ -73,26 +77,101 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'trafficproject.wsgi.application'
 
+#Logging
+#Logging of application
+
+class AsiaSingaporeFormatter(logging.Formatter):
+    def converter(self, timestamp):
+        dt = datetime.fromtimestamp(timestamp)  # Corrected usage
+        tz = pytz.timezone('Asia/Singapore')
+        return dt.astimezone(tz)
+
+    def formatTime(self, record, datefmt=None):
+        dt = self.converter(record.created)
+        if datefmt:
+            return dt.strftime(datefmt)
+        else:
+            return dt.isoformat()
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'asia_singapore': {
+            '()': AsiaSingaporeFormatter,
+            'format': '%(asctime)s %(levelname)s %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'E:/development/sources/logs/info.log',
+            'formatter': 'asia_singapore',
+            'when': 'D',  # Rotate daily
+            'interval': 1,  # Every 1 day
+            'backupCount': 7,  # Keep 3 days worth of logs
+        },
+        'trafficdb_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'E:/development/sources/logs/app.log',
+            'formatter': 'asia_singapore',
+            'when': 'D',  # Rotate daily
+            'interval': 1,  # Every 1 day
+            'backupCount': 7,  # Keep 3 days worth of logs
+        },
+        'trafficdb_middleware_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'E:/development/sources/logs/middleware.log',
+            'formatter': 'asia_singapore',
+            'when': 'D',  # Rotate daily
+            'interval': 1,  # Every 1 day
+            'backupCount': 7,  # Keep 3 days worth of logs
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'trafficdb': {  # Replace 'myapp' with your application's name
+            'handlers': ['trafficdb_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'trafficdb_middleware': {  # Replace 'myapp' with your application's name
+            'handlers': ['trafficdb_middleware_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mygowhere$default',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': 'mygowhere.mysql.pythonanywhere-services.com',  # Usually 'localhost' or an IP address
-        'PORT': '3306',  # Default MySQL port
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'mygowhere$default',
+#         'USER': 'mygowhere',
+#         'PASSWORD': '',
+#         'HOST': 'mygowhere.mysql.pythonanywhere-services.com',  # Usually 'localhost' or an IP address
+#         'PORT': '3306',  # Default MySQL port
+#     }
+# }
 
 
 # Password validation
