@@ -362,6 +362,7 @@ def bus_stop_view(request):
             # Add the friendly name as an attribute to the latest_record object
             latest_record.bus_stop_name = bus_stop_entry.bus_stop_name
             arrivals.append(latest_record)
-        
+    
+    arrivals = sorted(arrivals, key=lambda x: (x.bus_stop, x.service_no))
     logger.info('BusStop :: End ')
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
