@@ -330,10 +330,10 @@ def sendReplyPhoto(where,chat_id,msg_id):
         "tuas2": "4713"
         }
     caption_dict = {
-        "causeway1": "See the Causeway!",
-        "causeway2": "See the Causeway (BKE)!",
-        "tuas1": "See the 2nd Link Bridge!",
-        "tuas2": "See the 2nd Link Checkpoint!"
+        "causeway1": "Causeway (on bridge).",
+        "causeway2": "Causeway (in SG).",
+        "tuas1": "2nd Link (on bridge).",
+        "tuas2": "2nd Link (in SG)."
         }
     if where is None:
         bot.sendMessage(chat_id, "Don't Play Play Lah!")
