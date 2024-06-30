@@ -153,7 +153,7 @@ class BusArrival(models.Model):
         return None
 
 class TelegramUpdate(models.Model):
-    update_id = models.BigIntegerField(unique=True)
+    update_id = models.BigIntegerField()
     message = models.TextField()
     from_id = models.BigIntegerField()
     from_is_bot = models.BooleanField()

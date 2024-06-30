@@ -37,7 +37,8 @@ logger = logging.getLogger('trafficdb')
 # Dev Only
 if os.getenv('ENVIRONMENT') == 'dev':
     from unittest.mock import MagicMock
-    bot=MagicMock()       
+    bot=MagicMock()
+    is_dev=True
 # Prod Only
 if os.getenv('ENVIRONMENT') == 'prod':
     # Load the .env file
@@ -294,6 +295,7 @@ def webhook(request):
         
         if "message" in msg:
             chat_id = message["chat"]["id"]
+            msg_id = message["message_id"]
             if "text" in message:
                 text = message["text"]
                 # Check if the text starts with '/'
@@ -306,20 +308,51 @@ def webhook(request):
                         bot.sendMessage(chat_id, "Welcome! How can I help you today?")
                     elif command == 'hello':
                         bot.sendMessage(chat_id, "Hello! I am alive!")
-                    elif command == 'causeway1':
-                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
-                    elif command == 'causeway2':
-                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
-                    elif command == 'tuas1':
-                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
-                    elif command == 'tuas2':
-                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
+                    elif command in ['causeway1','causeway2','tuas1','tuas2']:
+                        sendReplyPhoto(command,chat_id,msg_id)
                     else:
                         bot.sendMessage(chat_id, "Command not recognized.")
                 else:
-                    bot.sendMessage(chat_id, "From the web: you said '{}'".format(text))
+                    bot.sendMessage(chat_id, "Don't send me junk!".format(text))
             else:
-                bot.sendMessage(chat_id, "From the web: sorry, I didn't understand that kind of message")
+                bot.sendMessage(chat_id, "Don't send me junk!")
         return HttpResponse("OK")
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def sendReplyPhoto(where,chat_id,msg_id):
+    logger.info('Webhook :: Msg: ' + str(where))
+    photo_dict = {
+        "causeway1": "2701",
+        "causeway2": "2702",
+        "tuas1": "4703",
+        "tuas2": "4713"
+        }
+    caption_dict = {
+        "causeway1": "See the Causeway!",
+        "causeway2": "See the Causeway (BKE)!",
+        "tuas1": "See the 2nd Link Bridge!",
+        "tuas2": "See the 2nd Link Checkpoint!"
+        }
+    if where is None:
+        bot.sendMessage(chat_id, "Don't Play Play Lah!", None, None, None, msg_id)
+    else:
+        #Call API and get URL
+        photo_url=getPhotoUrlFromLTA(photo_dict[where])
+        if is_dev:
+            logger.info('Webhook :: URL: ' + str(photo_url))
+        else: 
+            bot.sendPhoto(chat_id, photo_url, caption_dict[where], None, None, None, msg_id)
+        
+def getPhotoUrlFromLTA(id):
+    #Headers
+    acct_key = os.getenv('ACCT_KEY')
+    headers = {'AccountKey': acct_key,
+        'accept': 'application/json'}
+    
+    url = os.getenv('TRAFFIC_IMAGES_URL')
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    
+    image_link = next((camera['ImageLink'] for camera in data['value'] if camera['CameraID'] == id), None)
+    return image_link
