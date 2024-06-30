@@ -17,14 +17,46 @@ from django.contrib.auth.decorators import login_required
 import requests
 import pytz
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from dotenv import load_dotenv
+import urllib3
+import json
+import os
+import telepot
 
 # Local application/library specific imports
 from .forms import DivErrorList, QueueStatusForm
 from .models import (BusArrival, BusStop, Category, Comment, Direction, Post, Queue,
-                     QueueLength, QueueStatus, QueueType)
+                     QueueLength, QueueStatus, QueueType, TelegramUpdate)
 # from chartjs.views.lines import BaseLineChartView
-
+load_dotenv()
 logger = logging.getLogger('trafficdb')
+
+
+# Bot Settings
+# Dev Only
+if os.getenv('ENVIRONMENT') == 'dev':
+    from unittest.mock import MagicMock
+    bot=MagicMock()       
+# Prod Only
+if os.getenv('ENVIRONMENT') == 'prod':
+    # Load the .env file
+    load_dotenv()
+    
+    # Get the variables from the environment
+    proxy_url = os.getenv('PROXY_URL', '')
+    tele_secret = os.getenv('TELE_SECRET', '')
+    webhook_url = os.getenv('WEBHOOK_URL', '')
+    
+    # Set up telepot with proxy
+    telepot.api._pools = {
+        'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
+    }
+    telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30))
+    
+    # Initialize bot with secret token
+    bot = telepot.Bot(tele_secret)
+    bot.setWebhook(webhook_url, max_connections=1)
 
 #Create your views here.
 @method_decorator(never_cache, name='dispatch')
@@ -64,56 +96,6 @@ class IndexView(View):
         }
         logger.info('Dashboard :: End')
         return render(request, 'trafficdb/index.html', data)
-
-# @method_decorator(never_cache, name='dispatch')
-# class IndexView(View):
-#     def get(self,request):
-#         packed = {}
-#         direction_pack = {}
-#
-#         # Get the current time
-#         current_time = timezone.now()
-#         # Calculate the time one hour ago from the current time
-#         one_hour_ago = current_time - timedelta(minutes=60)
-#
-#         # Query to get all QueueStatus entries with their related Queue and QueueLength
-#         # that were created within the last hour
-#         queue_statuses = QueueStatus.objects.filter(createdTime__gte=one_hour_ago,queueLength__queueTypeDisplay=True).select_related('queue','queueLength')
-#         # Calculate the average queueLengthValue for each Queue
-#         average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue'))
-#
-#         # This will give you a queryset with the queue name and the average queue length
-#         for queue_info in average_queue_lengths:
-#             print(str(queue_info))
-#
-#         #Get the number of directions
-#         for each_direction in Queue.objects.values_list('direction',flat=True).distinct():
-#             queue_pack = {}
-#             #Get the queues
-#             direction_name = Direction.objects.get(id=each_direction).directionName
-#             print(direction_name)
-#             for each_queue in Queue.objects.filter(direction=each_direction).all():
-#                 # Subquery to get the latest createdTime for each queue
-#                 queue_statuses = QueueStatus.objects.filter(queue=each_queue,createdTime__gte=one_hour_ago).select_related('queue', 'queueLength').all()
-#                 print(queue_statuses)
-#                 # Calculate the average queueLengthValue for each Queue
-#                 average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue')).all()
-#                 # Main query to get the latest queueLength for each queue
-#                 if not average_queue_lengths:
-#                     queue_pack[each_queue] = ''
-#                 else:
-#                     for queue_status in average_queue_lengths:
-#                         print('Status:' + str(queue_status))
-#                         queue_pack[each_queue] = queue_status
-#                 direction_pack[direction_name] = queue_pack
-#
-#         #print(direction_pack)
-#         data = {
-#             'packed': direction_pack
-#         }
-#         #print(data)
-#         return render(request, 'trafficdb/index.html', data)
-
 
 def queue_list(request):
     queues = Queue.objects.all()
@@ -162,20 +144,6 @@ def queue_detail(request, queue_id):
 def disclaimer(request):
     logger.info('Disclaimer :: Start/End ')
     return render(request, 'trafficdb/disclaimer.html')
-# class IndexView(generic.ListView):
-#     template_name = "trafficdb/index.html"
-#     context_object_name = "queueStatusList"
-#
-#     def get_queryset(self):
-#         """
-#         Return the last five published questions (not including those set to be
-#         published in the future).
-#         """
-#         return QueueStatus.objects.filter(createdTime__lte=timezone.now()).order_by("-createdTime")[
-#             :5
-#         ]
-
-
 
 def blog_index(request):
     posts = Post.objects.all().order_by("-created_on")
@@ -226,7 +194,6 @@ def get_client_ip(request):
 def get_bus_arrivals(request):
     logger.info('BusArrivals :: Start ')
     if request.method == 'GET':
-        # The request is a POST request
         api_key = request.GET.get('secret_api_key')
         api_key_token = 'zCqKd62JYUOrtfTXiECJuC4yJiJYlFxj9vGkFtdaKP6fjfblABXXGxUe832IrjZc'
         if api_key_token == api_key:
@@ -242,7 +209,7 @@ def get_bus_arrivals(request):
     else:
         logger.info('BusArrivals :: End - Denied due to wrong method.')
         return HttpResponseForbidden('<h1>Access Denied</h1>')
-    
+
 def get_bus_arrivals_web():
     send_bus_request('46101')
     send_bus_request('46211')
@@ -255,12 +222,14 @@ def send_bus_request(bus_stop_code):
     current_time = timezone.now()
     # Calculate the time one hour ago from the current time
     mins_ago = current_time - timedelta(seconds=58)
-    
+
     if not BusArrival.objects.filter(bus_stop=bus_stop_code,createdTime__gte=mins_ago):
-        headers = {'AccountKey': 'v8nXM0XUTOie45jSW9tLzA=='}
-        response = requests.get(f'http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode={bus_stop_code}', headers=headers)
+        acct_key = os.getenv('ACCT_KEY')
+        headers = {'AccountKey': acct_key}
+        url = os.getenv('BUS_ARRIVAL_URL')
+        response = requests.get(url + bus_stop_code, headers=headers)
         data = response.json()
-    
+
         for service in data['Services']:
             bus_arrival = BusArrival(bus_stop = data['BusStopCode'],
                 service_no=service['ServiceNo'],
@@ -272,79 +241,11 @@ def send_bus_request(bus_stop_code):
             bus_arrival.save()
     else:
         logger.info('BusRequest :: Not sent due to within 1 min.')
-        
-
-# class LineChartJSONView(BaseLineChartView):
-#     def get_labels(self):
-#         """Return the labels for the x-axis."""
-#         bus_arrivals = BusArrival.objects.all()
-#         sg_tz = pytz.timezone('Asia/Singapore')
-#         labels = [timezone.localtime(arrival.createdTime, sg_tz).strftime('%Y-%m-%d %H:%M:%S') for arrival in bus_arrivals]
-#         return labels[::5]  # Return every 5th label
-#
-#     def get_data(self):
-#         """Return dataset to plot."""
-#         bus_arrivals = BusArrival.objects.all()
-#         sg_tz = pytz.timezone('Asia/Singapore')
-#
-#         # Group bus arrivals by bus stop code and service number
-#         grouped_arrivals = {}
-#         for arrival in bus_arrivals:
-#             key = (arrival.bus_stop, arrival.service_no)
-#             if key not in grouped_arrivals:
-#                 grouped_arrivals[key] = []
-#             estimated_arrival = parse_datetime(arrival.next_bus['EstimatedArrival'])
-#             estimated_arrival = timezone.localtime(estimated_arrival, sg_tz)
-#             created_time = timezone.localtime(arrival.createdTime, sg_tz)
-#             time_difference = (estimated_arrival - created_time).total_seconds() / 60  # in minutes
-#             grouped_arrivals[key].append(time_difference)
-#
-#         # Return every 5th time difference for each group
-#         return {key: values[::5] for key, values in grouped_arrivals.items()}
-#
-# line_chart = TemplateView.as_view(template_name='trafficdb/line_chart.html')
-# line_chart_json = LineChartJSONView.as_view()
-
-# class LineChartJSONView(BaseLineChartView):
-#
-#     def get_labels(self):
-#         labels = [bus_arrival.createdTime for bus_arrival in BusArrival.objects.filter().all() if bus_arrival.createdTime]
-#         return labels
-#
-#     def get_providers(self):
-#         providers = BusArrival.objects.filter().values_list('service_no', 'bus_stop').distinct()
-#         providers = [f'{service_no},{bus_stop}' for service_no, bus_stop in providers]
-#         return providers
-#
-#     def get_data(self):
-#         data = []
-#         providers = self.get_providers()
-#         labels = self.get_labels()
-#         sg_tz = pytz.timezone('Asia/Singapore')
-#         for provider in providers:
-#             service_no, bus_stop = provider.split(',')
-#             provider_data = []
-#             for label in labels:
-#                 bus_arrival = BusArrival.objects.filter(service_no=service_no, bus_stop=bus_stop, createdTime=label).first()
-#                 if bus_arrival:
-#                     estimated_arrival = parse_datetime(bus_arrival.next_bus['EstimatedArrival'])
-#                     if estimated_arrival:
-#                         estimated_arrival = timezone.localtime(estimated_arrival, sg_tz)
-#                         created_time = timezone.localtime(bus_arrival.createdTime, sg_tz)
-#                         time_difference = (estimated_arrival - created_time).total_seconds() / 60
-#                         provider_data.append(time_difference)
-#                 else:
-#                     provider_data.append('')  # append None if there is no bus arrival for this label
-#             data.append(provider_data)
-#         return data
-#
-# line_chart = TemplateView.as_view(template_name='trafficdb/line_chart.html')
-# line_chart_json = LineChartJSONView.as_view()
 
 @login_required
 def bus_stop_view(request):
     logger.info('BusStop :: Start ')
-    #get_bus_arrivals_web()
+    get_bus_arrivals_web()
     arrivals = []
     # First, we get the latest 'modifiedTime' for each 'bus_stop' and 'service_no'
     latest_times = BusArrival.objects.values('bus_stop', 'service_no').annotate(
@@ -352,8 +253,8 @@ def bus_stop_view(request):
     )
     for entry in latest_times:
         latest_record = BusArrival.objects.filter(
-            bus_stop=entry['bus_stop'], 
-            service_no=entry['service_no'], 
+            bus_stop=entry['bus_stop'],
+            service_no=entry['service_no'],
             createdTime=entry['latest_time']
         ).first()
         if latest_record:
@@ -362,7 +263,63 @@ def bus_stop_view(request):
             # Add the friendly name as an attribute to the latest_record object
             latest_record.bus_stop_name = bus_stop_entry.bus_stop_name
             arrivals.append(latest_record)
-    
+
     arrivals = sorted(arrivals, key=lambda x: (x.bus_stop, x.service_no))
     logger.info('BusStop :: End ')
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
+
+
+@csrf_exempt
+def webhook(request):
+    if request.method == 'POST':
+        msg = json.loads(request.body)
+        logger.info('Webhook :: Msg: ' + str(msg))
+        
+        # Store the raw JSON and other details in the database
+        update_id = msg.get('update_id')
+        message = msg.get('message', {})
+        from_user = message.get('from', {})
+        
+        TelegramUpdate.objects.create(
+            update_id=update_id,
+            message=json.dumps(message),  # Convert the message dict to a JSON string
+            from_id=from_user.get('id'),
+            from_is_bot=from_user.get('is_bot', False),
+            from_first_name=from_user.get('first_name', ''),
+            from_last_name=from_user.get('last_name', ''),
+            from_username=from_user.get('username', ''),
+            from_language_code=from_user.get('language_code', ''),
+            raw_json=msg  # Store the entire raw JSON
+        )
+        
+        if "message" in msg:
+            chat_id = message["chat"]["id"]
+            if "text" in message:
+                text = message["text"]
+                # Check if the text starts with '/'
+                if text.startswith('/'):
+                    # Process the command
+                    command = text[1:].split()[0]  # Extract the command without the '/'
+                    # Add your command processing logic here
+                    # For example, if the command is 'start', send a welcome message
+                    if command == 'start':
+                        bot.sendMessage(chat_id, "Welcome! How can I help you today?")
+                    elif command == 'hello':
+                        bot.sendMessage(chat_id, "Hello! I am alive!")
+                    elif command == 'causeway1':
+                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
+                    elif command == 'causeway2':
+                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
+                    elif command == 'tuas1':
+                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
+                    elif command == 'tuas2':
+                        bot.sendMessage(chat_id, "https://picsum.photos/200/300")
+                    else:
+                        bot.sendMessage(chat_id, "Command not recognized.")
+                else:
+                    bot.sendMessage(chat_id, "From the web: you said '{}'".format(text))
+            else:
+                bot.sendMessage(chat_id, "From the web: sorry, I didn't understand that kind of message")
+        return HttpResponse("OK")
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

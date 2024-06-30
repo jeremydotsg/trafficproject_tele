@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Direction, Queue, QueueType, QueueLength,QueueStatus
-from .models import Category, Comment, Post, BusArrival, BusStop
+from .models import Category, Comment, Post, BusArrival, BusStop, TelegramUpdate
 
 from django.contrib import admin
 
@@ -137,6 +137,20 @@ class BusArrivalAdmin(admin.ModelAdmin):
 class BusStopAdmin(admin.ModelAdmin):
     list_display = ('bus_stop', 'bus_stop_name')
     search_fields = ('bus_stop', 'bus_stop_name')
+    
+@admin.register(TelegramUpdate)
+class TelegramUpdateAdmin(admin.ModelAdmin):
+    list_display = ('update_id', 'from_first_name', 'from_username', 'created_at', 'modified_at')
+    search_fields = ('update_id', 'from_username')
+    readonly_fields = ('created_at', 'modified_at')
+
+    def has_add_permission(self, request):
+        # Disable add functionality
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Disable delete functionality
+        return False
     
 def _register(model, admin_class):
     admin.site.register(model, admin_class)

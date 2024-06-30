@@ -1,5 +1,5 @@
 from django.urls import path
-from trafficdb.views import IndexView, queue_detail, disclaimer, get_bus_arrivals
+from trafficdb.views import IndexView, queue_detail, disclaimer, get_bus_arrivals, webhook
 from . import views
 
 app_name = "trafficdb"
@@ -18,4 +18,5 @@ urlpatterns = [
     # path("<int:pk>/", views.DetailView.as_view(), name="detail"),
     # path("<int:pk>/results/", views.ResultsView.as_view(), name="results"),
     # path("<int:question_id>/vote/", views.vote, name="vote"),
+    path('webhook/', webhook, name='webhook'),
 ]

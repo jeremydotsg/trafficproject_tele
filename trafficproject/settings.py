@@ -13,6 +13,11 @@ from pathlib import Path
 import logging
 import pytz
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,17 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'abcd1234devkey'
-RECAPTCHA_PUBLIC_KEY = ''
-RECAPTCHA_PRIVATE_KEY = ''
+#Environment
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['localhost']
-
+#Keys
+SECRET_KEY = os.getenv('SECRET_KEY', '')
+RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY', '')
+RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY', '')
 
 # Application definition
 
@@ -93,6 +95,14 @@ class AsiaSingaporeFormatter(logging.Formatter):
         else:
             return dt.isoformat()
 
+
+#Logging
+LOG_BASE_PATH = os.getenv('LOG_BASE_PATH', 'E:/development/sources/logs/')
+
+LOG_INFO_FILENAME = os.path.join(LOG_BASE_PATH, 'info.log')
+LOG_APP_FILENAME = os.path.join(LOG_BASE_PATH, 'app.log')
+LOG_MIDDLEWARE_FILENAME = os.path.join(LOG_BASE_PATH, 'middleware.log')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -107,29 +117,29 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'E:/development/sources/logs/info.log',
+            'filename': LOG_INFO_FILENAME,
             'formatter': 'asia_singapore',
-            'when': 'D',  # Rotate daily
-            'interval': 1,  # Every 1 day
-            'backupCount': 7,  # Keep 3 days worth of logs
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 7,
         },
         'trafficdb_file': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'E:/development/sources/logs/app.log',
+            'filename': LOG_APP_FILENAME,
             'formatter': 'asia_singapore',
-            'when': 'D',  # Rotate daily
-            'interval': 1,  # Every 1 day
-            'backupCount': 7,  # Keep 3 days worth of logs
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 7,
         },
         'trafficdb_middleware_file': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'E:/development/sources/logs/middleware.log',
+            'filename': LOG_MIDDLEWARE_FILENAME,
             'formatter': 'asia_singapore',
-            'when': 'D',  # Rotate daily
-            'interval': 1,  # Every 1 day
-            'backupCount': 7,  # Keep 3 days worth of logs
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 7,
         },
     },
     'loggers': {
@@ -152,26 +162,29 @@ LOGGING = {
 }
 
 
+
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
 
+if os.getenv('ENVIRONMENT') == 'prod':
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('PROD_DB_ENGINE'),
+            'NAME': os.getenv('PROD_DB_NAME'),
+            'USER': os.getenv('PROD_DB_USER'),
+            'PASSWORD': os.getenv('PROD_DB_PASSWORD'),
+            'HOST': os.getenv('PROD_DB_HOST'),
+            'PORT': os.getenv('PROD_DB_PORT'),
+        }
     }
-}
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'mygowhere$default',
-#         'USER': 'mygowhere',
-#         'PASSWORD': '',
-#         'HOST': 'mygowhere.mysql.pythonanywhere-services.com',  # Usually 'localhost' or an IP address
-#         'PORT': '3306',  # Default MySQL port
-#     }
-# }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DEV_DB_ENGINE', 'django.db.backends.sqlite3'),
+            'NAME': os.path.join(BASE_DIR, os.getenv('DEV_DB_NAME', 'db.sqlite3')),
+        }
+    }
 
 
 # Password validation
@@ -208,12 +221,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = os.getenv('STATIC')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_ROOT = '/home/mygowhere/trafficproject/static'
-RECAPTCHA_REQUIRED_SCORE = 0.85
+STATIC_ROOT = os.getenv('STATIC_ROOT')
+RECAPTCHA_REQUIRED_SCORE = os.getenv('RECAPTCHA_REQUIRED_SCORE')

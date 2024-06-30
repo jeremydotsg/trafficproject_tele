@@ -151,3 +151,19 @@ class BusArrival(models.Model):
             # If the difference is negative, return 0
             return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
         return None
+
+class TelegramUpdate(models.Model):
+    update_id = models.BigIntegerField(unique=True)
+    message = models.TextField()
+    from_id = models.BigIntegerField()
+    from_is_bot = models.BooleanField()
+    from_first_name = models.CharField(max_length=255, blank=True, null=True)
+    from_last_name = models.CharField(max_length=255, blank=True, null=True)
+    from_username = models.CharField(max_length=255, blank=True, null=True)
+    from_language_code = models.CharField(max_length=10, blank=True, null=True)
+    raw_json = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Update ID: {self.update_id}" 
