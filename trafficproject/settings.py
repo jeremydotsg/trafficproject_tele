@@ -28,7 +28,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 #Environment
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+if os.getenv('ENVIRONMENT') == 'prod':
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '')
+else:
+    ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 #Keys
 SECRET_KEY = os.getenv('SECRET_KEY', '')
