@@ -97,7 +97,7 @@ class AsiaSingaporeFormatter(logging.Formatter):
 
 
 #Logging
-LOG_BASE_PATH = os.getenv('LOG_BASE_PATH', 'E:/development/sources/logs/')
+LOG_BASE_PATH = os.getenv('LOG_BASE_PATH', '')
 
 LOG_INFO_FILENAME = os.path.join(LOG_BASE_PATH, 'info.log')
 LOG_APP_FILENAME = os.path.join(LOG_BASE_PATH, 'app.log')
