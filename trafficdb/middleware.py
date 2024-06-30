@@ -5,9 +5,14 @@ import logging
 class BlockNonLocalMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-    
+
     def __call__(self, request):
         logger = logging.getLogger('trafficdb_middleware')
+        # Bypass check if the requested path is "/trafficdb/webhook/"
+        logger.info('Middleware - Check for path' + str(request.path))
+        if request.path == "/trafficdb/webhook/":
+            logger.info('Middleware - Bypass for webhook')
+            return self.get_response(request)
         # Get the client's IP address
         ip = None
         full_url = None
@@ -29,14 +34,15 @@ class BlockNonLocalMiddleware:
         if ip in ip_list:
             logger.info('Middleware - IP: ' + str(ip) + ', Matched IP_LIST & Skipped , Path: ' + str(full_url) )
             return self.get_response(request)
-        
+
         # Check the IP's country using an IP geolocation API
         response = requests.get(f'http://ip-api.com/json/{ip}')
         if response.status_code == 200:
             country = response.json().get('country')
             logger.info('Middleware - IP: ' + str(ip) + ', Country: ' + str(country) +', Path: ' + str(full_url) )
             if country not in ['Singapore','Malaysia']:
+                logger.info('Middleware - IP: ' + str(ip) + ', Denied Country: ' + str(country) +', Path: ' + str(full_url) )
                 return HttpResponseForbidden('<h1>Access Denied</h1>')
-        
+
         # If the IP is from Singapore or Malaysia, or if the API call failed, continue processing
         return self.get_response(request)

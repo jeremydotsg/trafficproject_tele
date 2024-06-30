@@ -17,6 +17,10 @@ from django.contrib.auth.decorators import login_required
 import requests
 import pytz
 import logging
+from django.views.decorators.csrf import csrf_exempt
+import telepot
+import urllib3
+import json
 
 # Local application/library specific imports
 from .forms import DivErrorList, QueueStatusForm
@@ -242,7 +246,7 @@ def get_bus_arrivals(request):
     else:
         logger.info('BusArrivals :: End - Denied due to wrong method.')
         return HttpResponseForbidden('<h1>Access Denied</h1>')
-    
+
 def get_bus_arrivals_web():
     send_bus_request('46101')
     send_bus_request('46211')
@@ -255,12 +259,12 @@ def send_bus_request(bus_stop_code):
     current_time = timezone.now()
     # Calculate the time one hour ago from the current time
     mins_ago = current_time - timedelta(seconds=58)
-    
+
     if not BusArrival.objects.filter(bus_stop=bus_stop_code,createdTime__gte=mins_ago):
         headers = {'AccountKey': 'v8nXM0XUTOie45jSW9tLzA=='}
         response = requests.get(f'http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode={bus_stop_code}', headers=headers)
         data = response.json()
-    
+
         for service in data['Services']:
             bus_arrival = BusArrival(bus_stop = data['BusStopCode'],
                 service_no=service['ServiceNo'],
@@ -272,7 +276,7 @@ def send_bus_request(bus_stop_code):
             bus_arrival.save()
     else:
         logger.info('BusRequest :: Not sent due to within 1 min.')
-        
+
 
 # class LineChartJSONView(BaseLineChartView):
 #     def get_labels(self):
@@ -352,8 +356,8 @@ def bus_stop_view(request):
     )
     for entry in latest_times:
         latest_record = BusArrival.objects.filter(
-            bus_stop=entry['bus_stop'], 
-            service_no=entry['service_no'], 
+            bus_stop=entry['bus_stop'],
+            service_no=entry['service_no'],
             createdTime=entry['latest_time']
         ).first()
         if latest_record:
@@ -362,7 +366,36 @@ def bus_stop_view(request):
             # Add the friendly name as an attribute to the latest_record object
             latest_record.bus_stop_name = bus_stop_entry.bus_stop_name
             arrivals.append(latest_record)
-    
+
     arrivals = sorted(arrivals, key=lambda x: (x.bus_stop, x.service_no))
     logger.info('BusStop :: End ')
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
+
+
+# Initialize your bot with the token provided by BotFather
+proxy_url = "http://proxy.server:3128"
+telepot.api._pools = {
+    'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
+}
+telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30))
+
+secret = "A_SECRET_NUMBER"
+bot = telepot.Bot('7134786634:AAFPhyy0tNKn8QwC0T29duAT5Z6nGUDjue8')
+bot.setWebhook("https://mygowhere.pythonanywhere.com/trafficdb/webhook/", max_connections=1)
+
+@csrf_exempt
+def webhook(request):
+    if request.method == 'POST':
+        print('Here I am')
+        msg = json.loads(request.body)
+        logger.info('Webhook :: Msg: ' + str(msg))
+        if "message" in msg:
+            chat_id = msg["message"]["chat"]["id"]
+            if "text" in msg["message"]:
+                text = msg["message"]["text"]
+                bot.sendMessage(chat_id, "From the web: you said '{}'".format(text))
+            else:
+                bot.sendMessage(chat_id, "From the web: sorry, I didn't understand that kind of message")
+        return HttpResponse("OK")
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
