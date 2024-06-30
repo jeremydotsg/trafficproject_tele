@@ -35,6 +35,7 @@ logger = logging.getLogger('trafficdb')
 
 # Bot Settings
 # Dev Only
+is_dev = False
 if os.getenv('ENVIRONMENT') == 'dev':
     from unittest.mock import MagicMock
     bot=MagicMock()
