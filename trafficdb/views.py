@@ -336,14 +336,14 @@ def sendReplyPhoto(where,chat_id,msg_id):
         "tuas2": "See the 2nd Link Checkpoint!"
         }
     if where is None:
-        bot.sendMessage(chat_id, "Don't Play Play Lah!", None, None, None, msg_id)
+        bot.sendMessage(chat_id, "Don't Play Play Lah!")
     else:
         #Call API and get URL
         photo_url=getPhotoUrlFromLTA(photo_dict[where])
         if is_dev:
             logger.info('Webhook :: URL: ' + str(photo_url))
         else: 
-            bot.sendPhoto(chat_id, photo_url, caption_dict[where], None, None, None, msg_id)
+            bot.sendPhoto(chat_id, photo_url, caption=caption_dict[where], reply_to_message_id=msg_id)
         
 def getPhotoUrlFromLTA(id):
     #Headers
