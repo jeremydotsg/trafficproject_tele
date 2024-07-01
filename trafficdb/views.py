@@ -271,6 +271,21 @@ def bus_stop_view(request):
     logger.info('BusStop :: End ')
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
 
+def check_requests_rate(from_id):
+    one_minute_ago = timezone.now() - timedelta(minutes=1)
+    two_minutes_ago = timezone.now() - timedelta(minutes=2)
+
+    requests_last_minute = TelegramUpdate.objects.filter(
+        from_id=from_id, 
+        created_at__gte=one_minute_ago
+    ).count()
+
+    requests_last_two_minutes = TelegramUpdate.objects.filter(
+        from_id=from_id, 
+        created_at__gte=two_minutes_ago
+    ).count()
+
+    return requests_last_minute >= 5 or requests_last_two_minutes >= 10
 
 @csrf_exempt
 def webhook(request):
@@ -369,18 +384,3 @@ def validate_token(token_id,token_to_validate):
     else:
         return False
     
-def check_requests_rate(from_id):
-    one_minute_ago = timezone.now() - timedelta(minutes=1)
-    two_minutes_ago = timezone.now() - timedelta(minutes=2)
-
-    requests_last_minute = TelegramUpdate.objects.filter(
-        from_id=from_id, 
-        created_at__gte=one_minute_ago
-    ).count()
-
-    requests_last_two_minutes = TelegramUpdate.objects.filter(
-        from_id=from_id, 
-        created_at__gte=two_minutes_ago
-    ).count()
-
-    return requests_last_minute >= 5 or requests_last_two_minutes >= 10
