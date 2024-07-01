@@ -296,7 +296,7 @@ def check_requests_rate_and_block(from_id,chat_id):
     # Check request rates and decide to block
     if requests_last_minute >= 5 or requests_last_two_minutes >= 10:
         BlockedTgUser.objects.create(from_id=from_id)
-        bot.sendMessage(chat_id, "Slow down! No reply for you till you reflect on what you have done!")
+        bot.sendMessage(chat_id, "Slow down! No reply for you till a while later!")
         logger.info('Webhook :: Rate Check: Blacklisting user.')
         return True
 
@@ -343,11 +343,13 @@ def webhook(request):
                     # Add your command processing logic here
                     # For example, if the command is 'start', send a welcome message
                     if command == 'start':
-                        bot.sendMessage(chat_id, "Welcome! How can I help you today?")
+                        bot.sendMessage(chat_id, "Welcome! This bot is meant for you to cross the Sg checkpoints smoothly! Check out the commands in the menu.")
                     elif command == 'hello':
                         bot.sendMessage(chat_id, "Hello! I am alive!")
                     elif command in ['causeway1','causeway2','tuas1','tuas2']:
                         sendReplyPhoto(command,chat_id,msg_id)
+                    elif command == 'dashboard':
+                         bot.sendMessage(chat_id, "https://t.me/AAWESOMEBOT/trafficdb")
                     else:
                         bot.sendMessage(chat_id, "Command not recognized.")
                 else:
@@ -402,4 +404,3 @@ def validate_token(token_id,token_to_validate):
         return True
     else:
         return False
-    
