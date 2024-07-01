@@ -36,6 +36,7 @@ logger = logging.getLogger('trafficdb')
 # Bot Settings
 # Dev Only
 is_dev = False
+bot = None
 if os.getenv('ENVIRONMENT') == 'dev':
     from unittest.mock import MagicMock
     bot=MagicMock()
@@ -293,7 +294,9 @@ def webhook(request):
             from_language_code=from_user.get('language_code', ''),
             raw_json=msg  # Store the entire raw JSON
         )
-        
+        if check_requests_rate(from_id):
+            bot.sendMessage(chat_id, "Too many commands.")
+            return HttpResponse("OK")
         if "message" in msg:
             chat_id = message["chat"]["id"]
             msg_id = message["message_id"]
@@ -357,3 +360,27 @@ def getPhotoUrlFromLTA(id):
     
     image_link = next((camera['ImageLink'] for camera in data['value'] if camera['CameraID'] == id), None)
     return image_link
+
+def validate_token(token_id,token_to_validate):
+    #Get Token from env
+    token = os.getenv(token_id, '')
+    if token == token_to_validate:
+        return True
+    else:
+        return False
+    
+def check_requests_rate(from_id):
+    one_minute_ago = timezone.now() - timedelta(minutes=1)
+    two_minutes_ago = timezone.now() - timedelta(minutes=2)
+
+    requests_last_minute = TelegramUpdate.objects.filter(
+        from_id=from_id, 
+        created_at__gte=one_minute_ago
+    ).count()
+
+    requests_last_two_minutes = TelegramUpdate.objects.filter(
+        from_id=from_id, 
+        created_at__gte=two_minutes_ago
+    ).count()
+
+    return requests_last_minute >= 5 or requests_last_two_minutes >= 10
