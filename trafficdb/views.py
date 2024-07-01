@@ -297,7 +297,7 @@ def check_requests_rate_and_block(from_id,chat_id):
     if requests_last_minute >= 5 or requests_last_two_minutes >= 10:
         BlockedTgUser.objects.create(from_id=from_id)
         bot.sendMessage(chat_id, "Slow down! No reply for you till you reflect on what you have done!")
-        logger.info('Webhook :: Rate Check: Blacklisted')
+        logger.info('Webhook :: Rate Check: Blacklisting user.')
         return True
 
     return False
@@ -319,6 +319,7 @@ def webhook(request):
             msg_id = message["message_id"]
             user_id = from_user.get('id')
             if check_requests_rate_and_block(user_id,chat_id):
+                logger.info('Webhook :: Rate Check: User is blacklisted')
                 return HttpResponse("Request ignored.")
           
             TelegramUpdate.objects.create(

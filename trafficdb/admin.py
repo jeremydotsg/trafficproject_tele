@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Direction, Queue, QueueType, QueueLength,QueueStatus
-from .models import Category, Comment, Post, BusArrival, BusStop, TelegramUpdate
+from .models import Category, Comment, Post, BusArrival, BusStop, TelegramUpdate, BlockedTgUser
 
 from django.contrib import admin
 
@@ -151,6 +151,10 @@ class TelegramUpdateAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Disable delete functionality
         return False
+    
+@admin.register(BlockedTgUser)
+class BlockedTgUserAdmin(admin.ModelAdmin):
+    list_display = ('from_id', 'blocked_at', 'unblock_at', 'manual_unblock_at')
     
 def _register(model, admin_class):
     admin.site.register(model, admin_class)
