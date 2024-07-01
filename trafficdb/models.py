@@ -167,3 +167,26 @@ class TelegramUpdate(models.Model):
 
     def __str__(self):
         return f"Update ID: {self.update_id}" 
+    
+class BlockedTgUser(models.Model):
+    from_id = models.BigIntegerField(unique=True)
+    blocked_at = models.DateTimeField(auto_now_add=True)
+    unblock_at = models.DateTimeField()
+    manual_unblock_at = models.DateTimeField(blank=True, null=True)  # Manual unblock timestamp
+
+    def __str__(self):
+        return f"Blocked ID: {self.from_id}"
+
+    def save(self, *args, **kwargs):
+        if not self.id:  # If creating a new entry
+            self.unblock_at = timezone.now() + timedelta(minutes=15)
+        super().save(*args, **kwargs)
+
+    def is_blocked(self):
+        # Check if manual_unblock_at is set and if the current time is before it
+        if self.manual_unblock_at and timezone.now() < self.manual_unblock_at:
+            return True
+        # If manual_unblock_at is not set, check unblock_at
+        elif timezone.now() < self.unblock_at:
+            return True
+        return False
