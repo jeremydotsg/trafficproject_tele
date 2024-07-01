@@ -27,7 +27,7 @@ import telepot
 # Local application/library specific imports
 from .forms import DivErrorList, QueueStatusForm
 from .models import (BusArrival, BusStop, Category, Comment, Direction, Post, Queue,
-                     QueueLength, QueueStatus, QueueType, TelegramUpdate)
+                     QueueLength, QueueStatus, QueueType, TelegramUpdate, BlockedTgUser)
 # from chartjs.views.lines import BaseLineChartView
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -271,7 +271,7 @@ def bus_stop_view(request):
     logger.info('BusStop :: End ')
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
 
-def check_requests_rate(from_id):
+def check_requests_rate_and_block(from_id):
     one_minute_ago = timezone.now() - timedelta(minutes=1)
     two_minutes_ago = timezone.now() - timedelta(minutes=2)
 
@@ -285,7 +285,22 @@ def check_requests_rate(from_id):
         created_at__gte=two_minutes_ago
     ).count()
 
-    return requests_last_minute >= 5 or requests_last_two_minutes >= 10
+    # Check if user is already blocked
+    try:
+        blocked_user = BlockedTgUser.objects.get(from_id=from_id)
+        if blocked_user.is_blocked():
+            return True  # User is currently blocked
+    except BlockedTgUser.DoesNotExist:
+        pass  # User is not blocked
+
+    # Check request rates and decide to block
+    if requests_last_minute >= 5 or requests_last_two_minutes >= 10:
+        BlockedTgUser.objects.create(from_id=from_id)
+        bot.sendMessage(chat_id, "Slow down! No reply for you till you reflect on what you have done!")
+        logger.info('Webhook :: Rate Check: Blacklisted')
+        return True
+
+    return False
 
 @csrf_exempt
 def webhook(request):
@@ -298,26 +313,26 @@ def webhook(request):
         message = msg.get('message', {})
         from_user = message.get('from', {})
         
-        TelegramUpdate.objects.create(
-            update_id=update_id,
-            message=json.dumps(message),  # Convert the message dict to a JSON string
-            from_id=from_user.get('id'),
-            from_is_bot=from_user.get('is_bot', False),
-            from_first_name=from_user.get('first_name', ''),
-            from_last_name=from_user.get('last_name', ''),
-            from_username=from_user.get('username', ''),
-            from_language_code=from_user.get('language_code', ''),
-            raw_json=msg  # Store the entire raw JSON
-        )
+        # Perform rate check before inserting into database
         if "message" in msg:
             chat_id = message["chat"]["id"]
             msg_id = message["message_id"]
-            if check_requests_rate(from_user.get('id')):
-                if is_dev:
-                    logger.info('Webhook :: Rate Check: Too many commands.')
-                else: 
-                    bot.sendMessage(chat_id, "Slow down!")
-                return HttpResponse("OK")
+            user_id = from_user.get('id')
+            if check_requests_rate_and_block(user_id):
+                return HttpResponse("Request ignored.")
+          
+            TelegramUpdate.objects.create(
+                update_id=update_id,
+                message=json.dumps(message),  # Convert the message dict to a JSON string
+                from_id=from_user.get('id'),
+                from_is_bot=from_user.get('is_bot', False),
+                from_first_name=from_user.get('first_name', ''),
+                from_last_name=from_user.get('last_name', ''),
+                from_username=from_user.get('username', ''),
+                from_language_code=from_user.get('language_code', ''),
+                raw_json=msg  # Store the entire raw JSON
+            )
+
             if "text" in message:
                 text = message["text"]
                 # Check if the text starts with '/'
