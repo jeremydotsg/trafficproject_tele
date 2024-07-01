@@ -309,7 +309,7 @@ def webhook(request):
             from_language_code=from_user.get('language_code', ''),
             raw_json=msg  # Store the entire raw JSON
         )
-        if check_requests_rate(from_id):
+        if check_requests_rate(from_user.get('id')):
             bot.sendMessage(chat_id, "Too many commands.")
             return HttpResponse("OK")
         if "message" in msg:
