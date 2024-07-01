@@ -271,7 +271,7 @@ def bus_stop_view(request):
     logger.info('BusStop :: End ')
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
 
-def check_requests_rate_and_block(from_id):
+def check_requests_rate_and_block(from_id,chat_id):
     one_minute_ago = timezone.now() - timedelta(minutes=1)
     two_minutes_ago = timezone.now() - timedelta(minutes=2)
 
@@ -318,7 +318,7 @@ def webhook(request):
             chat_id = message["chat"]["id"]
             msg_id = message["message_id"]
             user_id = from_user.get('id')
-            if check_requests_rate_and_block(user_id):
+            if check_requests_rate_and_block(user_id,chat_id):
                 return HttpResponse("Request ignored.")
           
             TelegramUpdate.objects.create(
