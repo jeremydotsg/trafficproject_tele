@@ -231,5 +231,5 @@ STATIC_URL = os.getenv('STATIC')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_ROOT = os.getenv('STATIC_ROOT')
+#STATIC_ROOT = os.getenv('STATIC_ROOT')
 RECAPTCHA_REQUIRED_SCORE = os.getenv('RECAPTCHA_REQUIRED_SCORE')
