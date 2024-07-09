@@ -3,7 +3,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 
 # Related third party imports
-from django.db.models import Avg, F, Max, OuterRef, Subquery
+from django.db.models import Avg, F, Max, OuterRef, Subquery, Q
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -23,11 +23,14 @@ import urllib3
 import json
 import os
 import telepot
+import time
+import uuid
+from telepot.namedtuple import InputMediaPhoto
 
 # Local application/library specific imports
 from .forms import DivErrorList, QueueStatusForm
 from .models import (BusArrival, BusStop, Category, Comment, Direction, Post, Queue,
-                     QueueLength, QueueStatus, QueueType, TelegramUpdate, BlockedTgUser)
+                     QueueLength, QueueStatus, QueueType, TelegramUpdate, BlockedTgUser, WhitelistTgUser)
 # from chartjs.views.lines import BaseLineChartView
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -37,26 +40,23 @@ logger = logging.getLogger('trafficdb')
 # Dev Only
 is_dev = False
 bot = None
-if os.getenv('ENVIRONMENT') == 'dev':
+if os.getenv('ENVIRONMENT') in ['dev']:
     from unittest.mock import MagicMock
     bot=MagicMock()
     is_dev=True
-# Prod Only
-if os.getenv('ENVIRONMENT') == 'prod':
-    # Load the .env file
-    load_dotenv()
+elif os.getenv('ENVIRONMENT') in ['devbot', 'prod']:
     
-    # Get the variables from the environment
     proxy_url = os.getenv('PROXY_URL', '')
     tele_secret = os.getenv('TELE_SECRET', '')
     webhook_url = os.getenv('WEBHOOK_URL', '')
     
-    # Set up telepot with proxy
-    telepot.api._pools = {
-        'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
-    }
-    telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30))
-    
+    if os.getenv('ENVIRONMENT') == 'prod':
+        # Set up telepot with proxy
+        telepot.api._pools = {
+            'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
+        }
+        telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30))
+        
     # Initialize bot with secret token
     bot = telepot.Bot(tele_secret)
     bot.setWebhook(webhook_url, max_connections=1)
@@ -272,8 +272,20 @@ def bus_stop_view(request):
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
 
 def check_requests_rate_and_block(from_id,chat_id):
+    
+    #Time
+    now = timezone.now()
     one_minute_ago = timezone.now() - timedelta(minutes=1)
     two_minutes_ago = timezone.now() - timedelta(minutes=2)
+    
+    #Whitelist
+    whitelist_records = WhitelistTgUser.objects.filter(
+        Q(from_id=from_id),
+        Q(start_at__lt=now),
+        Q(end_at__isnull=True) | Q(end_at__gt=now)
+    )
+    if whitelist_records.exists():
+        return False
 
     requests_last_minute = TelegramUpdate.objects.filter(
         from_id=from_id, 
@@ -284,22 +296,24 @@ def check_requests_rate_and_block(from_id,chat_id):
         from_id=from_id, 
         created_at__gte=two_minutes_ago
     ).count()
-
+        
+    blocked_records = BlockedTgUser.objects.filter(
+        Q(from_id=from_id),
+        Q(start_at__lt=now),
+        Q(end_at__isnull=True) | Q(end_at__gt=now)
+    )
+    
     # Check if user is already blocked
-    try:
-        blocked_user = BlockedTgUser.objects.get(from_id=from_id)
-        if blocked_user.is_blocked():
-            return True  # User is currently blocked
-    except BlockedTgUser.DoesNotExist:
-        pass  # User is not blocked
-
-    # Check request rates and decide to block
+    # Check if any records exist
+    if blocked_records.exists():
+        return True
+        
     if requests_last_minute >= 5 or requests_last_two_minutes >= 10:
         BlockedTgUser.objects.create(from_id=from_id)
         bot.sendMessage(chat_id, "Slow down! No reply for you till a while later!")
         logger.info('Webhook :: Rate Check: Blacklisting user.')
         return True
-
+    
     return False
 
 @csrf_exempt
@@ -348,6 +362,8 @@ def webhook(request):
                         bot.sendMessage(chat_id, "Hello! I am alive!")
                     elif command in ['causeway1','causeway2','tuas1','tuas2']:
                         sendReplyPhoto(command,chat_id,msg_id)
+                    elif command in ['all1234']:
+                        sendReplyPhotoGroup(chat_id,msg_id)
                     elif command == 'dashboard':
                          bot.sendMessage(chat_id, "https://t.me/AAWESOMEBOT/trafficdb")
                     else:
@@ -381,22 +397,64 @@ def sendReplyPhoto(where,chat_id,msg_id):
         photo_url=getPhotoUrlFromLTA(photo_dict[where])
         if is_dev:
             logger.info('Webhook :: URL: ' + str(photo_url))
-        else: 
+        else:
+            logger.info('Webhook :: URL: ' + str(photo_url))
             bot.sendPhoto(chat_id, photo_url, caption=caption_dict[where], reply_to_message_id=msg_id)
         
 def getPhotoUrlFromLTA(id):
-    #Headers
-    acct_key = os.getenv('ACCT_KEY')
-    headers = {'AccountKey': acct_key,
-        'accept': 'application/json'}
-    
-    url = os.getenv('TRAFFIC_IMAGES_URL')
-    response = requests.get(url, headers=headers)
-    data = response.json()
-    
-    image_link = next((camera['ImageLink'] for camera in data['value'] if camera['CameraID'] == id), None)
-    return image_link
+    # Headers
+    img_path = os.getenv('STATIC_IMG_PATH') + id + '.jpg'
+    img_url = os.getenv('STATIC_IMG_URL') + id + '.jpg'
 
+    file_path = img_path
+    # Check if the file exists and was modified within the last 5 minutes
+    if os.path.exists(file_path) and (time.time() - os.path.getmtime(file_path)) < 300:
+        img_url=img_url + '?b=' + str(os.path.getmtime(file_path))
+        return img_url
+    else:
+        acct_key = os.getenv('ACCT_KEY')
+        headers = {'AccountKey': acct_key, 'accept': 'application/json'}
+        
+        # Get the URL from environment variable
+        url = os.getenv('TRAFFIC_IMAGES_URL')
+        
+        # Make the request
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        
+        # Find the image link
+        image_link = next((camera['ImageLink'] for camera in data['value'] if camera['CameraID'] == id), None)
+        
+        # Download and save the image
+        img_data = requests.get(image_link).content
+        with open(file_path, 'wb') as handler:
+            handler.write(img_data)
+        img_url=img_url + '?a=' + str(uuid.uuid4())
+        return img_url
+ 
+def sendReplyPhotoGroup(chat_id,msg_id):
+    photo_dict = {
+        "causeway1": "2701",
+        "causeway2": "2702",
+        "tuas1": "4703",
+        "tuas2": "4713"
+        }
+    caption_dict = {
+        "causeway1": "Causeway (on bridge).",
+        "causeway2": "Causeway (in SG).",
+        "tuas1": "2nd Link (on bridge).",
+        "tuas2": "2nd Link (in SG)."
+        }
+    # Get photo from LTA or local
+    media_group = []
+    for key, value in photo_dict.items():
+        input_media = None
+        photo_url = getPhotoUrlFromLTA(value)
+        if photo_url:
+            input_media = InputMediaPhoto(media=photo_url,caption=caption_dict[key])
+            media_group.append(input_media)
+    bot.sendMediaGroup(chat_id=chat_id, media=media_group, reply_to_message_id=msg_id)
+    
 def validate_token(token_id,token_to_validate):
     #Get Token from env
     token = os.getenv(token_id, '')
