@@ -45,18 +45,18 @@ if os.getenv('ENVIRONMENT') in ['dev']:
     bot=MagicMock()
     is_dev=True
 elif os.getenv('ENVIRONMENT') in ['devbot', 'prod']:
-    
+
     proxy_url = os.getenv('PROXY_URL', '')
     tele_secret = os.getenv('TELE_SECRET', '')
     webhook_url = os.getenv('WEBHOOK_URL', '')
-    
+
     if os.getenv('ENVIRONMENT') == 'prod':
         # Set up telepot with proxy
         telepot.api._pools = {
-            'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
+            'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=100),
         }
-        telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30))
-        
+        telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=100))
+
     # Initialize bot with secret token
     bot = telepot.Bot(tele_secret)
     bot.setWebhook(webhook_url, max_connections=1)
@@ -272,12 +272,12 @@ def bus_stop_view(request):
     return render(request, 'trafficdb/bus_stop.html', {'arrivals': arrivals})
 
 def check_requests_rate_and_block(from_id,chat_id):
-    
+
     #Time
     now = timezone.now()
     one_minute_ago = timezone.now() - timedelta(minutes=1)
     two_minutes_ago = timezone.now() - timedelta(minutes=2)
-    
+
     #Whitelist
     whitelist_records = WhitelistTgUser.objects.filter(
         Q(from_id=from_id),
@@ -288,32 +288,32 @@ def check_requests_rate_and_block(from_id,chat_id):
         return False
 
     requests_last_minute = TelegramUpdate.objects.filter(
-        from_id=from_id, 
+        from_id=from_id,
         created_at__gte=one_minute_ago
     ).count()
 
     requests_last_two_minutes = TelegramUpdate.objects.filter(
-        from_id=from_id, 
+        from_id=from_id,
         created_at__gte=two_minutes_ago
     ).count()
-        
+
     blocked_records = BlockedTgUser.objects.filter(
         Q(from_id=from_id),
         Q(start_at__lt=now),
         Q(end_at__isnull=True) | Q(end_at__gt=now)
     )
-    
+
     # Check if user is already blocked
     # Check if any records exist
     if blocked_records.exists():
         return True
-        
+
     if requests_last_minute >= 5 or requests_last_two_minutes >= 10:
         BlockedTgUser.objects.create(from_id=from_id)
         bot.sendMessage(chat_id, "Slow down! No reply for you till a while later!")
         logger.info('Webhook :: Rate Check: Blacklisting user.')
         return True
-    
+
     return False
 
 @csrf_exempt
@@ -321,12 +321,12 @@ def webhook(request):
     if request.method == 'POST':
         msg = json.loads(request.body)
         logger.info('Webhook :: Msg: ' + str(msg))
-        
+
         # Store the raw JSON and other details in the database
         update_id = msg.get('update_id')
         message = msg.get('message', {})
         from_user = message.get('from', {})
-        
+
         # Perform rate check before inserting into database
         if "message" in msg:
             chat_id = message["chat"]["id"]
@@ -335,7 +335,7 @@ def webhook(request):
             if check_requests_rate_and_block(user_id,chat_id):
                 logger.info('Webhook :: Rate Check: User is blacklisted')
                 return HttpResponse("Request ignored.")
-          
+
             TelegramUpdate.objects.create(
                 update_id=update_id,
                 message=json.dumps(message),  # Convert the message dict to a JSON string
@@ -376,6 +376,38 @@ def webhook(request):
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+def getPhotoUrlFromLTA(id):
+    # Headers
+    img_path = os.getenv('STATIC_IMG_PATH') + 'image' + id + '.jpg'
+    img_url = os.getenv('STATIC_IMG_URL') + 'image' + id + '.jpg'
+
+    file_path = img_path
+    # Check if the file exists and was modified within the last 5 minutes
+    if os.path.exists(file_path) and (time.time() - os.path.getmtime(file_path)) < 300:
+        img_url=img_url + '?b=' + str(os.path.getmtime(file_path))
+        return img_path
+    else:
+        acct_key = os.getenv('ACCT_KEY')
+        headers = {'AccountKey': acct_key, 'accept': 'application/json'}
+
+        # Get the URL from environment variable
+        url = os.getenv('TRAFFIC_IMAGES_URL')
+
+        # Make the request
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        # Find the image link
+        image_link = next((camera['ImageLink'] for camera in data['value'] if camera['CameraID'] == id), None)
+
+        # Download and save the image
+        img_data = requests.get(image_link).content
+        with open(file_path, 'wb') as handler:
+            handler.write(img_data)
+            time.sleep(1)
+        img_url=img_url + '?a=' + str(uuid.uuid4())
+        return img_path
+
 def sendReplyPhoto(where,chat_id,msg_id):
     logger.info('Webhook :: Msg: ' + str(where))
     photo_dict = {
@@ -399,39 +431,13 @@ def sendReplyPhoto(where,chat_id,msg_id):
             logger.info('Webhook :: URL: ' + str(photo_url))
         else:
             logger.info('Webhook :: URL: ' + str(photo_url))
-            bot.sendPhoto(chat_id, photo_url, caption=caption_dict[where], reply_to_message_id=msg_id)
-        
-def getPhotoUrlFromLTA(id):
-    # Headers
-    img_path = os.getenv('STATIC_IMG_PATH') + id + '.jpg'
-    img_url = os.getenv('STATIC_IMG_URL') + id + '.jpg'
+            try:
+                bot.sendPhoto(chat_id, open(photo_url,'rb'), caption=caption_dict[where], reply_to_message_id=msg_id)
+            except Exception as e:
+                logger.error('Failed to send photo: {}'.format(e))
+                bot.sendMessage(chat_id,'Failed to send photo: {}'.format(e))
+                bot.sendMessage(chat_id,photo_url)
 
-    file_path = img_path
-    # Check if the file exists and was modified within the last 5 minutes
-    if os.path.exists(file_path) and (time.time() - os.path.getmtime(file_path)) < 300:
-        img_url=img_url + '?b=' + str(os.path.getmtime(file_path))
-        return img_url
-    else:
-        acct_key = os.getenv('ACCT_KEY')
-        headers = {'AccountKey': acct_key, 'accept': 'application/json'}
-        
-        # Get the URL from environment variable
-        url = os.getenv('TRAFFIC_IMAGES_URL')
-        
-        # Make the request
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        
-        # Find the image link
-        image_link = next((camera['ImageLink'] for camera in data['value'] if camera['CameraID'] == id), None)
-        
-        # Download and save the image
-        img_data = requests.get(image_link).content
-        with open(file_path, 'wb') as handler:
-            handler.write(img_data)
-        img_url=img_url + '?a=' + str(uuid.uuid4())
-        return img_url
- 
 def sendReplyPhotoGroup(chat_id,msg_id):
     photo_dict = {
         "causeway1": "2701",
@@ -451,10 +457,11 @@ def sendReplyPhotoGroup(chat_id,msg_id):
         input_media = None
         photo_url = getPhotoUrlFromLTA(value)
         if photo_url:
-            input_media = InputMediaPhoto(media=photo_url,caption=caption_dict[key])
+            logger.info('Photo URL :: ' + str(photo_url))
+            input_media = InputMediaPhoto(media=open(photo_url,'rb'),caption=caption_dict[key])
             media_group.append(input_media)
     bot.sendMediaGroup(chat_id=chat_id, media=media_group, reply_to_message_id=msg_id)
-    
+
 def validate_token(token_id,token_to_validate):
     #Get Token from env
     token = os.getenv(token_id, '')
