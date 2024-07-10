@@ -61,6 +61,20 @@ elif os.getenv('ENVIRONMENT') in ['devbot', 'prod']:
     bot = telepot.Bot(tele_secret)
     bot.setWebhook(webhook_url, max_connections=1)
 
+#Photos for causeway
+photo_dict = {
+    "causeway1": "2701",
+    "causeway2": "2702",
+    "tuas1": "4703",
+    "tuas2": "4713"
+    }
+
+caption_dict = {
+    "causeway1": "Wdls Causeway (Bridge).",
+    "causeway2": "Wdls Causeway (Twds Chkpt).",
+    "tuas1": "Tuas 2nd Link (Bridge).",
+    "tuas2": "Tuas 2nd Link (Twds Chkpt)."
+    }
 #Create your views here.
 @method_decorator(never_cache, name='dispatch')
 class IndexView(View):
@@ -377,51 +391,39 @@ def webhook(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 def getPhotoUrlFromLTA(id):
-    # Headers
-    img_path = os.getenv('STATIC_IMG_PATH') + 'image' + id + '.jpg'
-    img_url = os.getenv('STATIC_IMG_URL') + 'image' + id + '.jpg'
+    camera_id = None
+    file_path = os.getenv('STATIC_IMG_PATH')
+    img_full_path = os.path.join(file_path, f"image{id}.jpg")
 
-    file_path = img_path
     # Check if the file exists and was modified within the last 5 minutes
-    if os.path.exists(file_path) and (time.time() - os.path.getmtime(file_path)) < 300:
-        img_url=img_url + '?b=' + str(os.path.getmtime(file_path))
-        return img_path
+    if os.path.exists(img_full_path) and (time.time() - os.path.getmtime(img_full_path)) < 300:
+        return img_full_path
     else:
+        # Call LTA's API to pull all the images required
         acct_key = os.getenv('ACCT_KEY')
         headers = {'AccountKey': acct_key, 'accept': 'application/json'}
 
         # Get the URL from environment variable
         url = os.getenv('TRAFFIC_IMAGES_URL')
-
+        
         # Make the request
         response = requests.get(url, headers=headers)
-        data = response.json()
-
-        # Find the image link
-        image_link = next((camera['ImageLink'] for camera in data['value'] if camera['CameraID'] == id), None)
-
-        # Download and save the image
-        img_data = requests.get(image_link).content
-        with open(file_path, 'wb') as handler:
-            handler.write(img_data)
-            time.sleep(1)
-        img_url=img_url + '?a=' + str(uuid.uuid4())
-        return img_path
+        if response.status_code == 200:
+            data = response.json()
+            for item in data["value"]:
+                if item["CameraID"] in photo_dict.values():
+                    image_url = item["ImageLink"]
+                    camera_id = item["CameraID"]
+                    image_response = requests.get(image_url)
+                    if image_response.status_code == 200:
+                        full_file_name = os.path.join(file_path, f"image{camera_id}.jpg")
+                        with open(full_file_name, 'wb') as file:
+                            file.write(image_response.content)
+        return img_full_path
 
 def sendReplyPhoto(where,chat_id,msg_id):
     logger.info('Webhook :: Msg: ' + str(where))
-    photo_dict = {
-        "causeway1": "2701",
-        "causeway2": "2702",
-        "tuas1": "4703",
-        "tuas2": "4713"
-        }
-    caption_dict = {
-        "causeway1": "Causeway (on bridge).",
-        "causeway2": "Causeway (in SG).",
-        "tuas1": "2nd Link (on bridge).",
-        "tuas2": "2nd Link (in SG)."
-        }
+
     if where is None:
         bot.sendMessage(chat_id, "Don't Play Play Lah!")
     else:
@@ -435,22 +437,9 @@ def sendReplyPhoto(where,chat_id,msg_id):
                 bot.sendPhoto(chat_id, open(photo_url,'rb'), caption=caption_dict[where], reply_to_message_id=msg_id)
             except Exception as e:
                 logger.error('Failed to send photo: {}'.format(e))
-                bot.sendMessage(chat_id,'Failed to send photo: {}'.format(e))
-                bot.sendMessage(chat_id,photo_url)
+                bot.sendMessage(chat_id,'Failed to send photo.', reply_to_message_id=msg_id)
 
 def sendReplyPhotoGroup(chat_id,msg_id):
-    photo_dict = {
-        "causeway1": "2701",
-        "causeway2": "2702",
-        "tuas1": "4703",
-        "tuas2": "4713"
-        }
-    caption_dict = {
-        "causeway1": "Causeway (on bridge).",
-        "causeway2": "Causeway (in SG).",
-        "tuas1": "2nd Link (on bridge).",
-        "tuas2": "2nd Link (in SG)."
-        }
     # Get photo from LTA or local
     media_group = []
     for key, value in photo_dict.items():
