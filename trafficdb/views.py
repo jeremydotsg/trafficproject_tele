@@ -401,13 +401,13 @@ def webhook(request):
                             elif command == 'reload1234':
                                 reloadPhotos(chat_id,msg_id)
                         else:
-                            bot.sendMessage(chat_id, "Not allowed! {}".format(text), reply_to_message_id=msg_id)                        
+                            bot.sendMessage(chat_id, "Not allowed! Msg:{}".format(text), reply_to_message_id=msg_id)                        
                     elif command == 'dashboard':
                          bot.sendMessage(chat_id, "Check out https://t.me/AAWESOMEBOT/trafficdb !", reply_to_message_id=msg_id)
                     else:
                         bot.sendMessage(chat_id, "Command not recognized.", reply_to_message_id=msg_id)
                 else:
-                    bot.sendMessage(chat_id, "Don't send me junk! {}".format(text), reply_to_message_id=msg_id)
+                    bot.sendMessage(chat_id, "Don't send me junk! Msg: {}".format(text), reply_to_message_id=msg_id)
             else:
                 bot.sendMessage(chat_id, "Don't send me junk!")
         return HttpResponse("OK")
@@ -475,26 +475,34 @@ def sendReplyPhotoGroup(chat_id,msg_id):
             media_group.append(input_media)
     bot.sendMediaGroup(chat_id=chat_id, media=media_group, reply_to_message_id=msg_id)
     
-def reloadPhotos(chat_id,msg_id):
-    camera_id = None
+def reloadPhotos(chat_id, msg_id):
     file_path = os.getenv('STATIC_IMG_PATH')
     msg_to_send = ""
     logger.info('Reload Photos :: Start')
-    for key, value in photo_dict:
-        img_full_path = os.path.join(file_path, f"image{value}.jpg")
-        if os.path.exists(file_path):
-            os.remove(img_full_path)
-            
-            logger.info(f"The file {img_full_path} has been deleted.")
-            msg_to_send = msg_to_send + ' Removed ' + img_full_path + '.'
-        else:
-            logger.info(f"The file {img_full_path} does not exist.")
-            msg_to_send = msg_to_send + ' Not exist ' + img_full_path + '.'
     
-    msg_to_send = msg_to_send + ' Completed all deletion. Proceed to call reload photos.'
+    # Ensure photo_dict is defined
+    # photo_dict = {...}
+
+    for key, value in photo_dict.items():  # Corrected iteration over items
+        img_full_path = os.path.join(file_path, f"image{value}.jpg")
+        
+        try:
+            if os.path.exists(img_full_path):  # Corrected path check
+                os.remove(img_full_path)
+                logger.info(f"The file {img_full_path} has been deleted.")
+                msg_to_send += ' Removed ' + img_full_path + '.'
+            else:
+                logger.info(f"The file {img_full_path} does not exist.")
+                msg_to_send += ' Not exist ' + img_full_path + '.'
+        except Exception as e:
+            logger.error(f"Error deleting file {img_full_path}: {e}")
+            msg_to_send += f" Error deleting {img_full_path}."
+
+    msg_to_send += ' Completed all deletion. Proceed to call reload photos.'
     bot.sendMessage(chat_id, msg_to_send, reply_to_message_id=msg_id)
-    sendReplyPhotoGroup(chat_id,msg_id)
+    sendReplyPhotoGroup(chat_id, msg_id)
     logger.info('Reload Photos :: End')
+
 
 def validate_token(token_id,token_to_validate):
     #Get Token from env
