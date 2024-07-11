@@ -330,6 +330,24 @@ def check_requests_rate_and_block(from_id,chat_id):
 
     return False
 
+def check_whitelist(from_id):
+
+    #Time
+    now = timezone.now()
+    one_minute_ago = timezone.now() - timedelta(minutes=1)
+    two_minutes_ago = timezone.now() - timedelta(minutes=2)
+
+    #Whitelist
+    whitelist_records = WhitelistTgUser.objects.filter(
+        Q(from_id=from_id),
+        Q(start_at__lt=now),
+        Q(end_at__isnull=True) | Q(end_at__gt=now)
+    )
+    if whitelist_records.exists():
+        return True
+    
+    return False
+
 @csrf_exempt
 def webhook(request):
     if request.method == 'POST':
@@ -371,19 +389,25 @@ def webhook(request):
                     # Add your command processing logic here
                     # For example, if the command is 'start', send a welcome message
                     if command == 'start':
-                        bot.sendMessage(chat_id, "Welcome! This bot is meant for you to cross the Sg checkpoints smoothly! Check out the commands in the menu.")
+                        bot.sendMessage(chat_id, "Welcome! I am here to help you cross the Checkpoints faster. Check out the commands in the menu and do not send too many consecutive messages!", reply_to_message_id=msg_id)
                     elif command == 'hello':
                         bot.sendMessage(chat_id, "Hello! I am alive!")
                     elif command in ['causeway1','causeway2','tuas1','tuas2']:
                         sendReplyPhoto(command,chat_id,msg_id)
-                    elif command in ['all1234']:
-                        sendReplyPhotoGroup(chat_id,msg_id)
+                    elif command in ['all1234','reload1234']:
+                        if check_whitelist(user_id):
+                            if command == 'all1234':
+                                sendReplyPhotoGroup(chat_id,msg_id)
+                            elif command == 'reload1234':
+                                reloadPhotos(chat_id,msg_id)
+                        else:
+                            bot.sendMessage(chat_id, "Not allowed! {}".format(text), reply_to_message_id=msg_id)                        
                     elif command == 'dashboard':
-                         bot.sendMessage(chat_id, "https://t.me/AAWESOMEBOT/trafficdb")
+                         bot.sendMessage(chat_id, "Check out https://t.me/AAWESOMEBOT/trafficdb !", reply_to_message_id=msg_id)
                     else:
-                        bot.sendMessage(chat_id, "Command not recognized.")
+                        bot.sendMessage(chat_id, "Command not recognized.", reply_to_message_id=msg_id)
                 else:
-                    bot.sendMessage(chat_id, "Don't send me junk!".format(text))
+                    bot.sendMessage(chat_id, "Don't send me junk! {}".format(text), reply_to_message_id=msg_id)
             else:
                 bot.sendMessage(chat_id, "Don't send me junk!")
         return HttpResponse("OK")
@@ -430,9 +454,9 @@ def sendReplyPhoto(where,chat_id,msg_id):
         #Call API and get URL
         photo_url=getPhotoUrlFromLTA(photo_dict[where])
         if is_dev:
-            logger.info('Webhook :: URL: ' + str(photo_url))
+            logger.info('Webhook :: Path: ' + str(photo_url))
         else:
-            logger.info('Webhook :: URL: ' + str(photo_url))
+            logger.info('Webhook :: Path: ' + str(photo_url))
             try:
                 bot.sendPhoto(chat_id, open(photo_url,'rb'), caption=caption_dict[where], reply_to_message_id=msg_id)
             except Exception as e:
@@ -446,10 +470,31 @@ def sendReplyPhotoGroup(chat_id,msg_id):
         input_media = None
         photo_url = getPhotoUrlFromLTA(value)
         if photo_url:
-            logger.info('Photo URL :: ' + str(photo_url))
+            logger.info('Photo Path :: ' + str(photo_url))
             input_media = InputMediaPhoto(media=open(photo_url,'rb'),caption=caption_dict[key])
             media_group.append(input_media)
     bot.sendMediaGroup(chat_id=chat_id, media=media_group, reply_to_message_id=msg_id)
+    
+def reloadPhotos(chat_id,msg_id):
+    camera_id = None
+    file_path = os.getenv('STATIC_IMG_PATH')
+    msg_to_send = ""
+    logger.info('Reload Photos :: Start')
+    for key, value in photo_dict:
+        img_full_path = os.path.join(file_path, f"image{value}.jpg")
+        if os.path.exists(file_path):
+            os.remove(img_full_path)
+            
+            logger.info(f"The file {img_full_path} has been deleted.")
+            msg_to_send = msg_to_send + ' Removed ' + img_full_path + '.'
+        else:
+            logger.info(f"The file {img_full_path} does not exist.")
+            msg_to_send = msg_to_send + ' Not exist ' + img_full_path + '.'
+    
+    msg_to_send = msg_to_send + ' Completed all deletion. Proceed to call reload photos.'
+    bot.sendMessage(chat_id, msg_to_send, reply_to_message_id=msg_id)
+    sendReplyPhotoGroup(chat_id,msg_id)
+    logger.info('Reload Photos :: End')
 
 def validate_token(token_id,token_to_validate):
     #Get Token from env
