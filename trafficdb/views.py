@@ -495,7 +495,7 @@ def reloadPhotos(chat_id, msg_id):
             logger.error(f"Error deleting file {img_full_path}: {e}")
             msg_to_send += f" Error deleting image{value}.jpg ."
 
-    msg_to_send += ' Completed all deletion. Proceed to call reload photos.'
+    msg_to_send += ' Completed all deletion. Proceed to pull new photos.'
     bot.sendMessage(chat_id, msg_to_send, reply_to_message_id=msg_id)
     sendReplyPhotoGroup(chat_id, msg_id)
     logger.info('Reload Photos :: End')
