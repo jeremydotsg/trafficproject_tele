@@ -480,9 +480,6 @@ def reloadPhotos(chat_id, msg_id):
     msg_to_send = ""
     logger.info('Reload Photos :: Start')
     
-    # Ensure photo_dict is defined
-    # photo_dict = {...}
-
     for key, value in photo_dict.items():  # Corrected iteration over items
         img_full_path = os.path.join(file_path, f"image{value}.jpg")
         
@@ -490,13 +487,13 @@ def reloadPhotos(chat_id, msg_id):
             if os.path.exists(img_full_path):  # Corrected path check
                 os.remove(img_full_path)
                 logger.info(f"The file {img_full_path} has been deleted.")
-                msg_to_send += ' Removed ' + img_full_path + '.'
+                msg_to_send += ' Removed image' + value + '.jpg .'
             else:
                 logger.info(f"The file {img_full_path} does not exist.")
-                msg_to_send += ' Not exist ' + img_full_path + '.'
+                msg_to_send += ' Not exist image' + value + '.jpg .'
         except Exception as e:
             logger.error(f"Error deleting file {img_full_path}: {e}")
-            msg_to_send += f" Error deleting {img_full_path}."
+            msg_to_send += f" Error deleting image{value}.jpg ."
 
     msg_to_send += ' Completed all deletion. Proceed to call reload photos.'
     bot.sendMessage(chat_id, msg_to_send, reply_to_message_id=msg_id)
