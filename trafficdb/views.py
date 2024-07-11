@@ -322,7 +322,7 @@ def check_requests_rate_and_block(from_id,chat_id):
     if blocked_records.exists():
         return True
 
-    if requests_last_minute >= 5 or requests_last_two_minutes >= 10:
+    if requests_last_minute >= 8 or requests_last_two_minutes >= 16:
         BlockedTgUser.objects.create(from_id=from_id)
         bot.sendMessage(chat_id, "Slow down! No reply for you till a while later!")
         logger.info('Webhook :: Rate Check: Blacklisting user.')
