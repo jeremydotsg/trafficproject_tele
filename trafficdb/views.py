@@ -470,7 +470,8 @@ def webhook(request):
                         elif command == 'reload1234':
                             reloadPhotos(chat_id,msg_id)
                     else:
-                        bot.sendMessage(chat_id, msg_dict['notallowed'], reply_to_message_id=msg_id)                        
+                        if not is_group:
+                            bot.sendMessage(chat_id, msg_dict['notallowed'], reply_to_message_id=msg_id)                        
                 elif command == 'dashboard':
                      bot.sendMessage(chat_id, msg_dict['dashboard'], reply_to_message_id=msg_id)
                 else:
