@@ -395,6 +395,7 @@ def webhook(request):
                 chat_text = message["text"]
             except Exception as e:
                 logger.error("Webhook :: Ignore message and save it. {}".format(e)) 
+                return HttpResponse("Request ignored.")
             logger.info("Webhook :: Chat type: " + str(chat_type))
             is_group = False
             is_process = False
@@ -478,9 +479,9 @@ def webhook(request):
             else:
                 if not is_group:
                     bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
-            return HttpResponse("OK")
-        else:
-            return JsonResponse({'error': 'Method not allowed'}, status=405)
+        return HttpResponse("OK")
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 def getPhotoUrlFromLTA(id):
     camera_id = None
