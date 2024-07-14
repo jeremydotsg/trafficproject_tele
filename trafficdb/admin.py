@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Direction, Queue, QueueType, QueueLength,QueueStatus
-from .models import Category, Comment, Post, BusArrival, BusStop, TelegramUpdate, BlockedTgUser, WhitelistTgUser
+from .models import Category, Comment, Post, BusArrival, BusStop, TelegramUpdate, BlockedTgUser, WhitelistTgUser, WhitelistGroup
 
 from django.contrib import admin
 
@@ -159,6 +159,11 @@ class BlockedTgUserAdmin(admin.ModelAdmin):
 @admin.register(WhitelistTgUser)
 class WhitelistTgUserAdmin(admin.ModelAdmin):
     list_display = ('from_id', 'start_at', 'end_at' , 'created_at')
+    
+@admin.register(WhitelistGroup)
+class WhitelistGroupAdmin(admin.ModelAdmin):
+    list_display = ('group_id', 'created_at', 'start_at', 'end_at', 'remarks')
+    search_fields = ('group_id', 'remarks')
     
 def _register(model, admin_class):
     admin.site.register(model, admin_class)

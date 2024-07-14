@@ -25,12 +25,13 @@ import os
 import telepot
 import time
 import uuid
+import re
 from telepot.namedtuple import InputMediaPhoto
 
 # Local application/library specific imports
 from .forms import DivErrorList, QueueStatusForm
 from .models import (BusArrival, BusStop, Category, Comment, Direction, Post, Queue,
-                     QueueLength, QueueStatus, QueueType, TelegramUpdate, BlockedTgUser, WhitelistTgUser)
+                     QueueLength, QueueStatus, QueueType, TelegramUpdate, BlockedTgUser, WhitelistTgUser, WhitelistGroup)
 # from chartjs.views.lines import BaseLineChartView
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -40,6 +41,7 @@ logger = logging.getLogger('trafficdb')
 # Dev Only
 is_dev = False
 bot = None
+bot_name = os.getenv('BOT_NAME', '')
 if os.getenv('ENVIRONMENT') in ['dev']:
     from unittest.mock import MagicMock
     bot=MagicMock()
@@ -49,6 +51,7 @@ elif os.getenv('ENVIRONMENT') in ['devbot', 'prod']:
     proxy_url = os.getenv('PROXY_URL', '')
     tele_secret = os.getenv('TELE_SECRET', '')
     webhook_url = os.getenv('WEBHOOK_URL', '')
+    
 
     if os.getenv('ENVIRONMENT') == 'prod':
         # Set up telepot with proxy
@@ -75,6 +78,13 @@ caption_dict = {
     "tuas1": "Tuas 2nd Link (Bridge).",
     "tuas2": "Tuas 2nd Link (Twds Chkpt)."
     }
+msg_dict = {
+    "start" : "Hello!\nI am here to provide you useful information on the crossborder Bus Queues and more.\nBy using this bot, you accept that your details will be recorded for the purpose of processing your requests.",
+    "junk" : "Don't send me junk!",
+    "notallowed" : "Not allowed to use this command!",
+    "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
+    "blacklist" : "Slow down! I will stop responding to you."
+}
 #Create your views here.
 @method_decorator(never_cache, name='dispatch')
 class IndexView(View):
@@ -322,10 +332,10 @@ def check_requests_rate_and_block(from_id,chat_id):
     if blocked_records.exists():
         return True
 
-    if requests_last_minute >= 8 or requests_last_two_minutes >= 16:
+    if requests_last_minute >= 5 or requests_last_two_minutes >= 10:
         BlockedTgUser.objects.create(from_id=from_id)
-        bot.sendMessage(chat_id, "Slow down! No reply for you till a while later!")
-        logger.info('Webhook :: Rate Check: Blacklisting user.')
+        bot.sendMessage(chat_id, msg_dict['blacklist'])
+        logger.info("Webhook :: Rate Check: Blacklisting user " + str(from_id))
         return True
 
     return False
@@ -334,8 +344,6 @@ def check_whitelist(from_id):
 
     #Time
     now = timezone.now()
-    one_minute_ago = timezone.now() - timedelta(minutes=1)
-    two_minutes_ago = timezone.now() - timedelta(minutes=2)
 
     #Whitelist
     whitelist_records = WhitelistTgUser.objects.filter(
@@ -344,6 +352,24 @@ def check_whitelist(from_id):
         Q(end_at__isnull=True) | Q(end_at__gt=now)
     )
     if whitelist_records.exists():
+        logger.info("Check Whitelist :: User is whitelisted :: Userid " + str(from_id))
+        return True
+    
+    return False
+
+def check_whitelist_group(group_id):
+
+    #Time
+    now = timezone.now()
+
+    #Whitelist
+    whitelist_records = WhitelistGroup.objects.filter(
+        Q(group_id=group_id),
+        Q(start_at__lt=now),
+        Q(end_at__isnull=True) | Q(end_at__gt=now)
+    )
+    if whitelist_records.exists():
+        logger.info("Check Whitelist :: Group is whitelisted :: Groupid " + str(group_id))
         return True
     
     return False
@@ -353,20 +379,66 @@ def webhook(request):
     if request.method == 'POST':
         msg = json.loads(request.body)
         logger.info('Webhook :: Msg: ' + str(msg))
-
         # Store the raw JSON and other details in the database
         update_id = msg.get('update_id')
         message = msg.get('message', {})
         from_user = message.get('from', {})
+        user_id = from_user.get('id')
 
         # Perform rate check before inserting into database
         if "message" in msg:
             chat_id = message["chat"]["id"]
             msg_id = message["message_id"]
-            user_id = from_user.get('id')
-            if check_requests_rate_and_block(user_id,chat_id):
-                logger.info('Webhook :: Rate Check: User is blacklisted')
-                return HttpResponse("Request ignored.")
+            chat_type = message["chat"]["type"]
+            chat_text = ""
+            try:
+                chat_text = message["text"]
+            except Exception as e:
+                logger.error("Webhook :: Ignore message and save it. {}".format(e)) 
+            logger.info("Webhook :: Chat type: " + str(chat_type))
+            is_group = False
+            is_process = False
+            #if group
+            if chat_type in ["group","supergroup"]:
+                #check if the command is sent from Whitelisted group
+                if check_whitelist_group(chat_id):
+                    #Proceed and check if it is sent by Whitelisted user.
+                    if check_whitelist(user_id):
+                        is_group = True
+                        pattern = r"/(\w+)@(\w+)"
+                        match = re.match(pattern, chat_text)
+                        if match:
+                            cmd, bm = match.groups()
+                            if bm == bot_name:
+                                is_process = True
+                                command = cmd
+                                logger.info("Webhook :: Group command " + str(cmd))
+                            else:
+                                is_process = False
+                                logger.info("Webhook :: Group command for wrong bot received, bot_name " + str(bm))
+                        else:
+                            logger.info("Webhook :: Group command :: Wrong pattern.")
+                else:
+                    logger.info("Webhook :: Group command :: Non-whitelisted group.")
+                
+            elif chat_type == "private":
+                logger.info("Webhook :: Private Message from user " + str(user_id))
+                if check_requests_rate_and_block(user_id,chat_id):
+                    logger.info('Webhook :: Rate Check: User is blacklisted')
+                    return HttpResponse("Request ignored.")
+                # if check_whitelist(user_id):
+                # print("Webhook :: Whitelisted user :: ")
+                pattern = r"/(\w+)"
+                match = re.match(pattern, chat_text)
+                if match:
+                    command = match.group(1) 
+                    is_process = True
+                    logger.info("Webhook :: Private command " + str(command) + " from user " + str(user_id))
+                else:
+                    is_process = False
+                    logger.info("Webhook :: Private command :: Wrong Pattern.")
+                # else:
+                #    logger.info("Webhook :: Msg sent from non-whitelisted user. Commit to database and not process command.")
 
             TelegramUpdate.objects.create(
                 update_id=update_id,
@@ -379,40 +451,36 @@ def webhook(request):
                 from_language_code=from_user.get('language_code', ''),
                 raw_json=msg  # Store the entire raw JSON
             )
+            
 
-            if "text" in message:
-                text = message["text"]
-                # Check if the text starts with '/'
-                if text.startswith('/'):
-                    # Process the command
-                    command = text[1:].split()[0]  # Extract the command without the '/'
+            if is_process:
                     # Add your command processing logic here
                     # For example, if the command is 'start', send a welcome message
-                    if command == 'start':
-                        bot.sendMessage(chat_id, "Welcome! I am here to help you cross the Checkpoints faster. Check out the commands in the menu and do not send too many consecutive messages!", reply_to_message_id=msg_id)
-                    elif command == 'hello':
-                        bot.sendMessage(chat_id, "Hello! I am alive!")
-                    elif command in ['causeway1','causeway2','tuas1','tuas2']:
-                        sendReplyPhoto(command,chat_id,msg_id)
-                    elif command in ['all1234','reload1234']:
-                        if check_whitelist(user_id):
-                            if command == 'all1234':
-                                sendReplyPhotoGroup(chat_id,msg_id)
-                            elif command == 'reload1234':
-                                reloadPhotos(chat_id,msg_id)
-                        else:
-                            bot.sendMessage(chat_id, "Not allowed! Msg:{}".format(text), reply_to_message_id=msg_id)                        
-                    elif command == 'dashboard':
-                         bot.sendMessage(chat_id, "Check out https://t.me/AAWESOMEBOT/trafficdb !", reply_to_message_id=msg_id)
+                if command == 'start':
+                    bot.sendMessage(chat_id, msg_dict['start'], reply_to_message_id=msg_id)
+                elif command == 'hello':
+                    bot.sendMessage(chat_id, msg_dict['start'], reply_to_message_id=msg_id)
+                elif command in ['causeway1','causeway2','tuas1','tuas2']:
+                    sendReplyPhoto(command,chat_id,msg_id)
+                elif command in ['all1234','reload1234','showall']:
+                    if check_whitelist(user_id):
+                        if command in ['all1234','showall']:
+                            sendReplyPhotoGroup(chat_id,msg_id)
+                        elif command == 'reload1234':
+                            reloadPhotos(chat_id,msg_id)
                     else:
-                        bot.sendMessage(chat_id, "Command not recognized.", reply_to_message_id=msg_id)
+                        bot.sendMessage(chat_id, msg_dict['notallowed'], reply_to_message_id=msg_id)                        
+                elif command == 'dashboard':
+                     bot.sendMessage(chat_id, msg_dict['dashboard'], reply_to_message_id=msg_id)
                 else:
-                    bot.sendMessage(chat_id, "Don't send me junk! Msg: {}".format(text), reply_to_message_id=msg_id)
+                    if not is_group:
+                        bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
             else:
-                bot.sendMessage(chat_id, "Don't send me junk!")
-        return HttpResponse("OK")
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
+                if not is_group:
+                    bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
+            return HttpResponse("OK")
+        else:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 def getPhotoUrlFromLTA(id):
     camera_id = None
@@ -449,7 +517,7 @@ def sendReplyPhoto(where,chat_id,msg_id):
     logger.info('Webhook :: Msg: ' + str(where))
 
     if where is None:
-        bot.sendMessage(chat_id, "Don't Play Play Lah!")
+        bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
     else:
         #Call API and get URL
         photo_url=getPhotoUrlFromLTA(photo_dict[where])
@@ -487,15 +555,15 @@ def reloadPhotos(chat_id, msg_id):
             if os.path.exists(img_full_path):  # Corrected path check
                 os.remove(img_full_path)
                 logger.info(f"The file {img_full_path} has been deleted.")
-                msg_to_send += ' Removed image' + value + '.jpg .'
+                msg_to_send += 'Removed image' + value + '.jpg.\n'
             else:
                 logger.info(f"The file {img_full_path} does not exist.")
-                msg_to_send += ' Not exist image' + value + '.jpg .'
+                msg_to_send += 'Not exist image' + value + '.jpg.\n'
         except Exception as e:
             logger.error(f"Error deleting file {img_full_path}: {e}")
-            msg_to_send += f" Error deleting image{value}.jpg ."
+            msg_to_send += f" Error deleting image{value}.jpg.\n"
 
-    msg_to_send += ' Completed all deletion. Proceed to pull new photos.'
+    msg_to_send += 'Completed all deletion. Proceed to pull new photos.'
     bot.sendMessage(chat_id, msg_to_send, reply_to_message_id=msg_id)
     sendReplyPhotoGroup(chat_id, msg_id)
     logger.info('Reload Photos :: End')
