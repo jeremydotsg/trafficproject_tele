@@ -83,7 +83,7 @@ msg_dict = {
     "junk" : "Don't send me junk!",
     "notallowed" : "Not allowed to use this command!",
     "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
-    "blacklist" : "Slow down! I will stop responding to you."
+    "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!"
 }
 #Create your views here.
 @method_decorator(never_cache, name='dispatch')
