@@ -384,6 +384,8 @@ def webhook(request):
         message = msg.get('message', {})
         from_user = message.get('from', {})
         user_id = from_user.get('id')
+        is_group = False
+        is_process = False
 
         # Perform rate check before inserting into database
         if "message" in msg:
@@ -397,15 +399,14 @@ def webhook(request):
                 logger.error("Webhook :: Ignore message and save it. {}".format(e)) 
                 return HttpResponse("Request ignored.")
             logger.info("Webhook :: Chat type: " + str(chat_type))
-            is_group = False
-            is_process = False
+            
             #if group
             if chat_type in ["group","supergroup"]:
                 #check if the command is sent from Whitelisted group
+                is_group = True
                 if check_whitelist_group(chat_id):
                     #Proceed and check if it is sent by Whitelisted user.
                     if check_whitelist(user_id):
-                        is_group = True
                         pattern = r"/(\w+)@(\w+)"
                         match = re.match(pattern, chat_text)
                         if match:
@@ -452,7 +453,6 @@ def webhook(request):
                 from_language_code=from_user.get('language_code', ''),
                 raw_json=msg  # Store the entire raw JSON
             )
-            
 
             if is_process:
                     # Add your command processing logic here
@@ -466,6 +466,7 @@ def webhook(request):
                 elif command in ['all1234','reload1234','showall']:
                     if check_whitelist(user_id):
                         if command in ['all1234','showall']:
+                            print(is_group)
                             sendReplyPhotoGroup(chat_id,msg_id, is_group)
                         elif command == 'reload1234':
                             reloadPhotos(chat_id,msg_id)
