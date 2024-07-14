@@ -466,7 +466,7 @@ def webhook(request):
                 elif command in ['all1234','reload1234','showall']:
                     if check_whitelist(user_id):
                         if command in ['all1234','showall']:
-                            sendReplyPhotoGroup(chat_id,msg_id)
+                            sendReplyPhotoGroup(chat_id,msg_id, is_group)
                         elif command == 'reload1234':
                             reloadPhotos(chat_id,msg_id)
                     else:
@@ -532,7 +532,7 @@ def sendReplyPhoto(where,chat_id,msg_id):
                 logger.error('Failed to send photo: {}'.format(e))
                 bot.sendMessage(chat_id,'Failed to send photo.', reply_to_message_id=msg_id)
 
-def sendReplyPhotoGroup(chat_id,msg_id):
+def sendReplyPhotoGroup(chat_id,msg_id,is_group):
     # Get photo from LTA or local
     media_group = []
     for key, value in photo_dict.items():
@@ -542,7 +542,10 @@ def sendReplyPhotoGroup(chat_id,msg_id):
             logger.info('Photo Path :: ' + str(photo_url))
             input_media = InputMediaPhoto(media=open(photo_url,'rb'),caption=caption_dict[key])
             media_group.append(input_media)
-    bot.sendMediaGroup(chat_id=chat_id, media=media_group, reply_to_message_id=msg_id)
+    if is_group:
+        bot.sendMediaGroup(chat_id=chat_id, media=media_group)
+    else:
+        bot.sendMediaGroup(chat_id=chat_id, media=media_group, reply_to_message_id=msg_id)
     
 def reloadPhotos(chat_id, msg_id):
     file_path = os.getenv('STATIC_IMG_PATH')
@@ -566,7 +569,7 @@ def reloadPhotos(chat_id, msg_id):
 
     msg_to_send += 'Completed all deletion. Proceed to pull new photos.'
     bot.sendMessage(chat_id, msg_to_send, reply_to_message_id=msg_id)
-    sendReplyPhotoGroup(chat_id, msg_id)
+    sendReplyPhotoGroup(chat_id, msg_id, False)
     logger.info('Reload Photos :: End')
 
 
