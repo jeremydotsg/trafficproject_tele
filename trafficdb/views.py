@@ -79,7 +79,7 @@ caption_dict = {
     "tuas2": "Tuas 2nd Link (Twds Chkpt)."
     }
 msg_dict = {
-    "start" : "Hello!\nI am here to provide you useful information on the crossborder Bus Queues and more.\nBy using this bot, you accept that your details will be recorded for the purpose of processing your requests.",
+    "start" : "Hello!\nI am here to provide you useful information on the crossborder Bus Queues and more.\nBy using this bot, you accept that your details will be recorded for the purpose of processing your requests.\nFor Traffic photos, I need to talk to my counterparts so it will take a while before I respond.",
     "junk" : "Don't send me junk!",
     "notallowed" : "Not allowed to use this command!",
     "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
