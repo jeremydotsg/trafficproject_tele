@@ -1,0 +1,62 @@
+{% extends "trafficdb/base.html" %}
+{% block page_title %}
+<div class="container-lg mt-3 px-xs-0 px-sm-0">
+	<div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm bold"><h2 class="text-center">Checkpoint Jam or Not?</h2></div>
+{% endblock page_title %}
+{% block page_content %}
+<p class="text-center mb-3">How jam is it?</p>
+<p class="text-center mb-3">Share by clicking the coloured buttons!</p>
+<div class="card px-1">
+	<nav>
+		<div class="nav nav-pills px-1 py-1" id="nav-tab" role="tablist">
+		{% for direction, queues in packed.items %}
+			{% if forloop.first %}
+			<button class="nav-link active" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="true">{{direction}}</button>
+			{% else %}
+			<button class="nav-link" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="false">{{direction}}</button>
+			{% endif %}
+		{% endfor %}
+		</div>
+	</nav>
+	
+	<div class="tab-content" id="nav-tabContent">
+		{% for direction, queue_types in packed.items %}
+			{% if forloop.first %}
+			<div class="tab-pane fade show active" id="nav-{{ forloop.counter }}" role="tabpanel" aria-labelledby="nav-{{ forloop.counter }}-tab">
+			{% else %}
+			<div class="tab-pane fade" id="nav-{{ forloop.counter }}" role="tabpanel" aria-labelledby="nav-{{ forloop.counter }}-tab">
+			{% endif %}
+			{% for queue_type, queues in queue_types.items %}
+				{%if queues %}
+				<div class="card mb-1">
+					<h5 class="card-header bg-secondary text-white">{{ queue_type }}</h5>
+					<ul class="list-group list-group-flush">
+						{% for queue, status in queues.items %}
+						<li class="list-group-item d-flex justify-content-between align-items-center">
+							<span class="fs-6 fw-bold">{{ queue }}</span>
+							<a href="{% url 'trafficdb:queue_detail' queue_id=queue.id %}" class="stretched-link">
+								{% if status.averageLength <= 1 %}
+								<button type="button" class="btn btn-success btn-sm float-end">No Queue</button>
+								{% elif status.averageLength <= 2 %}
+								<button type="button" class="btn btn-info btn-sm float-end">Short Queue</button>
+								{% elif status.averageLength <= 3 %}
+								<button type="button" class="btn btn-warning btn-sm float-end">Medium Queue</button>
+								{% elif status.averageLength <= 4 %}
+								<button type="button" class="btn btn-danger btn-sm float-end">Long Queue</button>
+								{% elif status.averageLength <= 5 %}
+								<button type="button" class="btn btn-full btn-sm float-end">Full Queue</button>
+								{% else %}
+								<button type="button" class="btn btn-secondary btn-sm float-end">No data</button>
+								{% endif %}
+							</a>
+						</li>
+						{% endfor %}
+					</ul>
+				</div>
+				{% endif %}
+			{% endfor %}
+			</div>
+		{% endfor %}
+	</div>
+</div>
+{% endblock page_content %}

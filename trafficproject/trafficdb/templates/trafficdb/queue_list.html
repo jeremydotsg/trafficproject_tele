@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Queue List</title>
+</head>
+<body>
+    <h1>Queue List</h1>
+    <ul>
+        {% for queue in queues %}
+            <li>
+                <strong>{{ queue.queueName }}</strong> - {{ queue.queueDesc }}
+                <ul>
+                    {% for status in queue_statuses %}
+                        {% if status.queue.id == queue.id %}
+                            <li>
+                                Length: {{ status.queueLength }} - Created: {{ status.createdTime }}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
