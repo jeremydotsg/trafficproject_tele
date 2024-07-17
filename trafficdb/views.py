@@ -83,7 +83,9 @@ msg_dict = {
     "junk" : "Don't send me junk!",
     "notallowed" : "Not allowed to use this command!",
     "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
-    "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!"
+    "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!",
+    "waitmsg" : "Let me get my friends to help in your request. Give us a little while."
+
 }
 #Create your views here.
 @method_decorator(never_cache, name='dispatch')
@@ -518,7 +520,7 @@ def getPhotoUrlFromLTA(id):
 
 def sendReplyPhoto(where,chat_id,msg_id):
     logger.info('Webhook :: Msg: ' + str(where))
-
+    bot.sendMessage(chat_id, msg_dict['wait'])
     if where is None:
         bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
     else:
@@ -536,6 +538,7 @@ def sendReplyPhoto(where,chat_id,msg_id):
 
 def sendReplyPhotoGroup(chat_id,msg_id,is_group):
     # Get photo from LTA or local
+    bot.sendMessage(chat_id, msg_dict['wait'])
     media_group = []
     for key, value in photo_dict.items():
         input_media = None
