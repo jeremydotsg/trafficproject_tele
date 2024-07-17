@@ -36,6 +36,8 @@ from .models import (BusArrival, BusStop, Category, Comment, Direction, Post, Qu
 load_dotenv()
 logger = logging.getLogger('trafficdb')
 
+# Random String to protect endpoint
+randstring = uuid.uuid4().hex
 
 # Bot Settings
 # Dev Only
@@ -50,7 +52,7 @@ elif os.getenv('ENVIRONMENT') in ['devbot', 'prod']:
 
     proxy_url = os.getenv('PROXY_URL', '')
     tele_secret = os.getenv('TELE_SECRET', '')
-    webhook_url = os.getenv('WEBHOOK_URL', '')
+    webhook_url = os.getenv('WEBHOOK_URL', '') + randstring +'/'
     
 
     if os.getenv('ENVIRONMENT') == 'prod':
@@ -377,8 +379,8 @@ def check_whitelist_group(group_id):
     return False
 
 @csrf_exempt
-def webhook(request):
-    if request.method == 'POST':
+def webhook(request, ranid):
+    if request.method == 'POST' and ranid == randstring:
         msg = json.loads(request.body)
         logger.info('Webhook :: Msg: ' + str(msg))
         # Store the raw JSON and other details in the database
