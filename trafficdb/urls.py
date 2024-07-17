@@ -18,5 +18,5 @@ urlpatterns = [
     # path("<int:pk>/", views.DetailView.as_view(), name="detail"),
     # path("<int:pk>/results/", views.ResultsView.as_view(), name="results"),
     # path("<int:question_id>/vote/", views.vote, name="vote"),
-    path('webhook/<ranid>/', webhook, name='webhook'),
+    path('webhook/', webhook, name='webhook'),
 ]

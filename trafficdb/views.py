@@ -379,7 +379,7 @@ def check_whitelist_group(group_id):
     return False
 
 @csrf_exempt
-def webhook(request, ranid):
+def webhook(request):
     if request.method == 'POST':
         msg = json.loads(request.body)
         logger.info('Webhook :: Msg: ' + str(msg))
