@@ -52,7 +52,7 @@ elif os.getenv('ENVIRONMENT') in ['devbot', 'prod']:
 
     proxy_url = os.getenv('PROXY_URL', '')
     tele_secret = os.getenv('TELE_SECRET', '')
-    webhook_url = os.getenv('WEBHOOK_URL', '') + randstring +'/'
+    webhook_url = os.getenv('WEBHOOK_URL', '')
     
 
     if os.getenv('ENVIRONMENT') == 'prod':
@@ -380,7 +380,7 @@ def check_whitelist_group(group_id):
 
 @csrf_exempt
 def webhook(request, ranid):
-    if request.method == 'POST' and ranid == randstring:
+    if request.method == 'POST':
         msg = json.loads(request.body)
         logger.info('Webhook :: Msg: ' + str(msg))
         # Store the raw JSON and other details in the database
