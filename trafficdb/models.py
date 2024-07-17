@@ -152,7 +152,7 @@ class BusArrival(models.Model):
             return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
         return None
 
-class TelegramUpdate(models.Model):
+class TelegramRequest(models.Model):
     update_id = models.BigIntegerField()
     message = models.TextField()
     from_id = models.BigIntegerField()

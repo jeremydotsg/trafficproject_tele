@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Direction, Queue, QueueType, QueueLength,QueueStatus
-from .models import Category, Comment, Post, BusArrival, BusStop, TelegramUpdate, BlockedTgUser, WhitelistTgUser, WhitelistGroup
+from .models import Category, Comment, Post, BusArrival, BusStop, TelegramRequest, BlockedTgUser, WhitelistTgUser, WhitelistGroup
 
 from django.contrib import admin
 
@@ -138,8 +138,8 @@ class BusStopAdmin(admin.ModelAdmin):
     list_display = ('bus_stop', 'bus_stop_name')
     search_fields = ('bus_stop', 'bus_stop_name')
     
-@admin.register(TelegramUpdate)
-class TelegramUpdateAdmin(admin.ModelAdmin):
+@admin.register(TelegramRequest)
+class TelegramRequestAdmin(admin.ModelAdmin):
     list_display = ('update_id', 'from_first_name', 'from_username', 'created_at', 'modified_at')
     search_fields = ('update_id', 'from_username')
     readonly_fields = ('created_at', 'modified_at')

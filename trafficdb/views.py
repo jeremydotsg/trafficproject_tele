@@ -31,7 +31,7 @@ from telepot.namedtuple import InputMediaPhoto
 # Local application/library specific imports
 from .forms import DivErrorList, QueueStatusForm
 from .models import (BusArrival, BusStop, Category, Comment, Direction, Post, Queue,
-                     QueueLength, QueueStatus, QueueType, TelegramUpdate, BlockedTgUser, WhitelistTgUser, WhitelistGroup)
+                     QueueLength, QueueStatus, QueueType, TelegramRequest, BlockedTgUser, WhitelistTgUser, WhitelistGroup)
 # from chartjs.views.lines import BaseLineChartView
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -313,12 +313,12 @@ def check_requests_rate_and_block(from_id,chat_id):
     if whitelist_records.exists():
         return False
 
-    requests_last_minute = TelegramUpdate.objects.filter(
+    requests_last_minute = TelegramRequest.objects.filter(
         from_id=from_id,
         created_at__gte=one_minute_ago
     ).count()
 
-    requests_last_two_minutes = TelegramUpdate.objects.filter(
+    requests_last_two_minutes = TelegramRequest.objects.filter(
         from_id=from_id,
         created_at__gte=two_minutes_ago
     ).count()
@@ -444,7 +444,7 @@ def webhook(request):
                 # else:
                 #    logger.info("Webhook :: Msg sent from non-whitelisted user. Commit to database and not process command.")
 
-            TelegramUpdate.objects.create(
+            TelegramRequest.objects.create(
                 update_id=update_id,
                 message=json.dumps(message),  # Convert the message dict to a JSON string
                 from_id=from_user.get('id'),
