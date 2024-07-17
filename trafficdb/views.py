@@ -84,7 +84,7 @@ msg_dict = {
     "notallowed" : "Not allowed to use this command!",
     "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
     "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!",
-    "waitmsg" : "Let me get my friends to help in your request. Give us a little while."
+    "wait" : "Let me get my friends to help in your request. Give us a little while."
 
 }
 #Create your views here.
