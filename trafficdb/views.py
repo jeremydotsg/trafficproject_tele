@@ -287,6 +287,7 @@ def webhook(request,ranid):
         logger.info('Webhook :: Msg: ' + str(msg))
         # Process the response
         resp = process_telebot_request(request, bot)
+        logger.info('Webhook :: Response :: ' + str(resp))
         return JsonResponse({'response': resp}, status=200)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)

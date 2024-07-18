@@ -51,7 +51,7 @@ resp = {
     }
 # Contains all the methods to process bot requests
 def process_telebot_request(request, bot):
-    
+
     # Store the raw JSON and other details in the database
     msg = json.loads(request.body)
     update_id = msg["update_id"]
@@ -141,8 +141,8 @@ def process_telebot_request(request, bot):
             if check_requests_rate_and_block(user_id,chat_id):
                 logger.info('Webhook :: Rate Check: User is blacklisted')
                 return resp['rate']
-            # if check_whitelist(user_id):
-            # print("Webhook :: Whitelisted user :: ")
+            if not check_whitelist(user_id):
+                return resp['nousr']
             pattern = r"/(\w+)"
             match = re.match(pattern, chat_text)
             if match:
