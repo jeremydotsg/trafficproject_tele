@@ -138,7 +138,7 @@ def process_telebot_request(request, bot):
             
         elif chat_type == "private":
             logger.info("Webhook :: Private Message from user " + str(user_id))
-            if check_requests_rate_and_block(user_id,chat_id):
+            if check_requests_rate_and_block(bot, user_id,chat_id):
                 logger.info('Webhook :: Rate Check: User is blacklisted')
                 return resp['rate']
             if not check_whitelist(user_id) and not check_whitelist("9999"):
@@ -295,7 +295,7 @@ def reloadPhotos(bot, chat_id, msg_id, is_group):
     sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
     logger.info('Reload Photos :: End')
     
-def check_requests_rate_and_block(from_id,chat_id):
+def check_requests_rate_and_block(bot, from_id,chat_id):
 
     #Time
     now = timezone.now()
