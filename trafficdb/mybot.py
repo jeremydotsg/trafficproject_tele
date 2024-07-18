@@ -239,10 +239,16 @@ def sendReplyPhoto(bot, where, chat_id, msg_id, is_group):
         photo_url=getSavePhoto(photo_dict[where])
         logger.info('Webhook :: Path: ' + str(photo_url))
         try:
-            bot.sendPhoto(chat_id, open(photo_url,'rb'), caption=caption_dict[where], reply_to_message_id=msg_id)
+            if not is_group: 
+                bot.sendPhoto(chat_id, open(photo_url,'rb'), caption=caption_dict[where], reply_to_message_id=msg_id)
+            else:
+                bot.sendPhoto(chat_id, open(photo_url,'rb'), caption=caption_dict[where])
         except Exception as e:
             logger.error('Failed to send photo: {}'.format(e))
-            bot.sendMessage(chat_id,'Failed to send photo.', reply_to_message_id=msg_id)
+            if not is_group:
+                bot.sendMessage(chat_id,'Failed to send photo.', reply_to_message_id=msg_id)
+            else:
+                bot.sendMessage(chat_id,'Failed to send photo.')
 
 def sendReplyPhotoGroup(bot, chat_id, msg_id, is_group):
     # Get photo from LTA or local
