@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import requests
 import logging
 import os
+import fnmatch
 
 # Load the .env file
 load_dotenv()
@@ -18,7 +19,7 @@ class BlockNonLocalMiddleware:
         if os.getenv('ENVIRONMENT') == 'prod':
             logger.info('Middleware :: Rule 1 - Path :: ' + str(request.path))
             # Rule 1 - Bypass check if the requested path is "/trafficdb/webhook/"
-            if request.path == "/trafficdb/webhook/":
+            if fnmatch.fnmatch(request.path, "/trafficdb/webhook/*/"):
                 logger.info('Middleware :: Rule 1 - Path :: Bypassed for path webhook')
                 return self.get_response(request)
             # Rule 2 - Get the client's IP address
