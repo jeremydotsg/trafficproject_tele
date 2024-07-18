@@ -101,7 +101,7 @@ def process_telebot_request(request, bot):
         except Exception as e:
             # Capture the message sent by 
             logger.error("Webhook :: Ignore message and save it. {}".format(e))
-            return resp['ignore']
+            return resp['ignored']
                         
         # Process only if it is group or private chats
         if chat_type in ["group","supergroup"]:
