@@ -194,10 +194,10 @@ class WhitelistTgUser(models.Model):
     def __str__(self):
         return f"W ID: {self.from_id}"
 
-    def save(self, *args, **kwargs):
-        if not self.id:  # If creating a new entry
-            self.end_at = timezone.now() + timedelta(minutes=15)
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:  # If creating a new entry
+    #         self.end_at = timezone.now() + timedelta(minutes=15)
+    #     super().save(*args, **kwargs)
         
 class WhitelistGroup(models.Model):
     group_id = models.BigIntegerField()
