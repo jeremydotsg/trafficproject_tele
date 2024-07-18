@@ -141,8 +141,8 @@ def process_telebot_request(request, bot):
             if check_requests_rate_and_block(user_id,chat_id):
                 logger.info('Webhook :: Rate Check: User is blacklisted')
                 return resp['rate']
-            # if not check_whitelist(user_id):
-            #     return resp['nousr']
+            if not check_whitelist(user_id) and not check_whitelist("9999"):
+                return resp['nousr']
             pattern = r"/(\w+)"
             match = re.match(pattern, chat_text)
             if match:
