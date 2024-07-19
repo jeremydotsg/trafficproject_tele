@@ -39,7 +39,7 @@ msg_dict = {
     "lta_tnc" : "\nNote: Contains information from LTA's Traffic Images dataset accessed on the date of this message made available under the terms of the <a href=\"https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html\">Singapore Open Data Licence version 1.0</a>.",
     "streamnote" : "Note: The bot owners are not associated with the channels in the links.\nThe links are provided for informational purposes only. We do not guarantee accuracy, completeness, or suitability and do not accept any liabilities over the use of the information.\n\nBy proceeding, you accept the risks and do not hold us liable for anything arises from the use of the information.",
     "beta"  : "Currently in limited beta mode.",
-    "tnc" : "<b>Terms & Conditions</b>\nBy interacting (not limited to sending a message) with this Bot (i.e. your request), you agree for the Bot to receive, store, process and exchange the information received from the Telegram Bot API.\nIn order to process your request, the Bot may exchange information with Third Party Service Providers in whole or parts the Bot receives, including but not limited to the commands you send.\n"
+    "tnc" : "<b>Terms & Conditions</b>\nBy interacting (not limited to sending a message) with this Bot (i.e. your request), you agree for the Bot to receive, store, process and exchange the information received from the Telegram Bot API.\nIn order to process your request, the Bot may exchange information with Third Party Service Providers in whole or parts the Bot receives, including but not limited to the commands you send.\nThe information provided by the Bot is not screened for accuracy. You accept all risks associated with using the information provided by the bot.\n"
 }
 
 resp = {
