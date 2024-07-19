@@ -30,14 +30,16 @@ caption_dict = {
     "tuas2": "Tuas 2nd Link (Twds Chkpt)."
     }
 msg_dict = {
-    "start" : "Hello!\nI am here to provide you useful information on the crossborder Bus Queues and more.\nBy using this bot, you accept that your details will be recorded for the purpose of processing your requests.",
+    "start" : "Hello!\nI am here to provide you useful information on the crossborder Bus Queues and more.",
     "junk" : "Don't send me junk!",
     "notallowed" : "Not allowed to use this command!",
     "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
     "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!",
-    "wait" : "Wait a moment...\nOn the way!",
-    "beta"  : "Currently in limited beta mode."
-
+    "wait" : "Wait a moment...",
+    "lta_tnc" : "\nNote: Contains information from LTA's Traffic Images dataset accessed on the date of this message made available under the terms of the <a href=\"https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html\">Singapore Open Data Licence version 1.0</a>.",
+    "streamnote" : "Note: The bot owners are not associated with the channels in the links.\nThe links are provided for informational purposes only. We do not guarantee accuracy, completeness, or suitability and do not accept any liabilities over the use of the information.\n\nBy proceeding, you accept the risks and do not hold us liable for anything arises from the use of the information.",
+    "beta"  : "Currently in limited beta mode.",
+    "tnc" : "<b>Terms & Conditions</b>\nBy interacting (not limited to sending a message) with this Bot (i.e. your request), you agree for the Bot to receive, store, process and exchange the information received from the Telegram Bot API.\nIn order to process your request, the Bot may exchange information with Third Party Service Providers in whole or parts the Bot receives, including but not limited to the commands you send.\n"
 }
 
 resp = {
@@ -167,7 +169,13 @@ def process_telebot_request(request, bot):
         if is_process:
             # Start Command - Display a welcome message
             if command in ['start','hello']:
-                bot.sendMessage(chat_id, msg_dict['start'], reply_to_message_id=msg_id) if not is_group else bot.sendMessage(chat_id, msg_dict['start'])
+                if not is_group:
+                    bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
+                else:
+                    bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], parse_mode="HTML")
+                return update_return_response(req_obj,'ok')
+            elif command == 'tnc':
+                if not is_group: bot.sendMessage(chat_id, msg_dict['tnc'] + msg_dict['lta_tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
                 return update_return_response(req_obj,'ok')
             elif command == 'dashboard':
                 bot.sendMessage(chat_id, msg_dict['dashboard'], reply_to_message_id=msg_id) if not is_group else bot.sendMessage(chat_id, msg_dict['dashboard'])
@@ -235,7 +243,7 @@ def getSavePhoto(id):
 def sendReplyPhoto(bot, where, chat_id, msg_id, is_group):
     logger.info('Webhook :: Msg: ' + str(where))
     if not is_group: 
-        bot.sendMessage(chat_id, msg_dict['wait'])
+        bot.sendMessage(chat_id, msg_dict['wait'] + msg_dict['lta_tnc'], parse_mode="HTML")
     if where is None:
         bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
         return update_return_response(req_obj,'junk')
@@ -258,7 +266,7 @@ def sendReplyPhoto(bot, where, chat_id, msg_id, is_group):
 def sendReplyPhotoGroup(bot, chat_id, msg_id, is_group):
     # Get photo from LTA or local
     if not is_group: 
-        bot.sendMessage(chat_id, msg_dict['wait'])
+        bot.sendMessage(chat_id, msg_dict['wait'] + msg_dict['lta_tnc'], parse_mode="HTML")
     media_group = []
     for key, value in photo_dict.items():
         input_media = None
