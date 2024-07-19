@@ -164,9 +164,15 @@ class TelegramRequest(models.Model):
     raw_json = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    json_response = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return f"Update ID: {self.update_id}" 
+        return f"Update ID: {self.update_id}"
+    
+    def update_response(self, new_response):
+        # Update the 'message' field with the new response
+        self.json_response = new_response
+        self.save()
     
 class BlockedTgUser(models.Model):
     from_id = models.BigIntegerField()

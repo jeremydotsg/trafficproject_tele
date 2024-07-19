@@ -9,6 +9,7 @@ import time
 import logging
 from django.db.models import Q
 import re
+from aiohttp.web_response import json_response
 
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -59,7 +60,7 @@ def process_telebot_request(request, bot):
     is_process = False
     
     if "message" not in msg:   
-        TelegramRequest.objects.create(
+        x = TelegramRequest.objects.create(
             update_id=update_id,
             message="See Raw JSON.",  # Convert the message dict to a JSON string
             from_id='0',
@@ -70,7 +71,7 @@ def process_telebot_request(request, bot):
             from_language_code='',
             raw_json=msg  # Store the entire raw JSON
         )
-        return resp['ignored']
+        return update_return_response(x,'ignored')
     elif "message" in msg:
         message = msg["message"]
         from_id = message["from"]["id"]
@@ -78,7 +79,7 @@ def process_telebot_request(request, bot):
         user_id = from_user.get('id')
         chat_id = message["chat"]["id"]
         msg_id = message["message_id"]
-        TelegramRequest.objects.create(
+        req_obj = TelegramRequest.objects.create(
             update_id=update_id,
             message=message,  # Convert the message dict to a JSON string
             from_id=from_id,
@@ -89,11 +90,12 @@ def process_telebot_request(request, bot):
             from_language_code=from_user.get('language_code', ''),
             raw_json=msg  # Store the entire raw JSON
         )
-        
         chat_type = message["chat"]["type"]
         chat_text = ""
         
         logger.info("Webhook :: Chat type: " + str(chat_type))
+        
+        # x.update_response("")
         
         # Get the msg text and save the request
         try:
@@ -101,7 +103,7 @@ def process_telebot_request(request, bot):
         except Exception as e:
             # Capture the message sent by 
             logger.error("Webhook :: Ignore message and save it. {}".format(e))
-            return resp['ignored']
+            return update_return_response(req_obj,'ignored')
                         
         # Process only if it is group or private chats
         if chat_type in ["group","supergroup"]:
@@ -122,27 +124,27 @@ def process_telebot_request(request, bot):
                             # No Response
                             is_process = False
                             logger.info("Webhook :: Group command for wrong bot received, bot_name " + str(bm))
-                            return resp['wrongbot']
+                            return update_return_response(req_obj,'wrongbot')
                     else:
                         # No Response for wrong pattern.
                         logger.info("Webhook :: Group command :: Wrong pattern.")
-                        return resp['wrongptn']
+                        return update_return_response(req_obj,'wrongptn')
                 else:
                     # No Response for non whitelisted user
                     logger.info("Webhook :: Group command :: Non-whitelisted user.")
-                    return resp['nousr']
+                    return update_return_response(req_obj,'nousr')
             else:
                 # No Response for non whitelisted group
                 logger.info("Webhook :: Group command :: Non-whitelisted group.")
-                return resp['nogrp']
+                return update_return_response(req_obj,'nogrp')
             
         elif chat_type == "private":
             logger.info("Webhook :: Private Message from user " + str(user_id))
             if check_requests_rate_and_block(bot, user_id,chat_id):
                 logger.info('Webhook :: Rate Check: User is blacklisted')
-                return resp['rate']
+                return update_return_response(req_obj,'rate')
             if not check_whitelist(user_id) and not check_whitelist("9999"):
-                return resp['nousr']
+                return update_return_response(req_obj,'nousr')
             pattern = r"/(\w+)"
             match = re.match(pattern, chat_text)
             if match:
@@ -151,7 +153,7 @@ def process_telebot_request(request, bot):
                 logger.info("Webhook :: Private command " + str(command) + " from user " + str(user_id))
             else:
                 logger.info("Webhook :: Private command :: Wrong Pattern.")
-                return resp['wrongptn']
+                return update_return_response(req_obj,'wrongptn')
             # else:
             #    logger.info("Webhook :: Msg sent from non-whitelisted user. Commit to database and not process command.")
         
@@ -163,38 +165,38 @@ def process_telebot_request(request, bot):
             # Start Command - Display a welcome message
             if command in ['start','hello']:
                 bot.sendMessage(chat_id, msg_dict['start'], reply_to_message_id=msg_id) if not is_group else bot.sendMessage(chat_id, msg_dict['start'])
-                return resp['ok']
+                return update_return_response(req_obj,'ok')
             elif command == 'dashboard':
                 bot.sendMessage(chat_id, msg_dict['dashboard'], reply_to_message_id=msg_id) if not is_group else bot.sendMessage(chat_id, msg_dict['dashboard'])
-                return resp['ok']
+                return update_return_response(req_obj,'ok')
             # Photo Commands - Send the photos over
             elif command in ['causeway1','causeway2','tuas1','tuas2']:
                 sendReplyPhoto(bot, command,chat_id,msg_id, is_group)
-                return resp['ok']
+                return update_return_response(req_obj,'ok')
             # Whitelist users (and groups) only commands
             elif command in ['reload','showall']:
                 if check_whitelist(user_id):
                     if command in ['showall']:
                         sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
-                        return resp['ok']  
+                        return update_return_response(req_obj,'ok')  
                     elif command == 'reload':
                         reloadPhotos(bot, chat_id, msg_id, is_group)
-                        return resp['ok'] 
+                        return update_return_response(req_obj,'ok') 
                 else:
                     if not is_group:
                         bot.sendMessage(chat_id, msg_dict['notallowed'], reply_to_message_id=msg_id) 
-                        return resp['nousr']                       
+                        return update_return_response(req_obj,'nousr')                       
             else:
                 if not is_group:
                     bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
-                return resp['junk']  
+                return update_return_response(req_obj,'junk')  
         else:
             if not is_group:
                 bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
-            return resp['junk']  
+            return update_return_response(req_obj,'junk')  
     else:
         logger.info("Webhook :: Not a message.")
-        return resp['ignored'] 
+        return update_return_response(req_obj,'ignored') 
 
 def getSavePhoto(id):
     camera_id = None
@@ -233,7 +235,7 @@ def sendReplyPhoto(bot, where, chat_id, msg_id, is_group):
         bot.sendMessage(chat_id, msg_dict['wait'])
     if where is None:
         bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
-        return resp['junk']
+        return update_return_response(req_obj,'junk')
     else:
         #Call API and get URL
         photo_url=getSavePhoto(photo_dict[where])
@@ -373,3 +375,9 @@ def check_whitelist_group(group_id):
         return True
     
     return False
+
+def update_return_response(tele_req, resp_code):
+    # Assuming tele_req is a TelegramRequest object
+    tele_req.json_response = {"response": str(resp[resp_code])}
+    tele_req.save()  # Save the updated response
+    return tele_req.json_response
