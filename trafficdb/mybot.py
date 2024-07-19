@@ -35,7 +35,8 @@ msg_dict = {
     "notallowed" : "Not allowed to use this command!",
     "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
     "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!",
-    "wait" : "Wait a moment...\nOn the way!"
+    "wait" : "Wait a moment...\nOn the way!",
+    "beta"  : "Currently in limited beta mode."
 
 }
 
@@ -45,9 +46,10 @@ resp = {
     'nousr' : 'User not in whitelist.',
     'wrongptn' : 'Wrong pattern for command.',
     'wrongbot' : 'Wrong bot.',
-    'rate' : 'Rate limited.',
+    'rate' : 'Slow mode: Rate limited.',
     'junk' : 'Junk received from user.',
     'generic' : 'Error. See logs.',
+    'beta' : 'Beta Mode: User not in whitelist.',
     'ok' : 'Ok, request processed.'
     }
 # Contains all the methods to process bot requests
@@ -144,7 +146,8 @@ def process_telebot_request(request, bot):
                 logger.info('Webhook :: Rate Check: User is blacklisted')
                 return update_return_response(req_obj,'rate')
             if not check_whitelist(user_id) and not check_whitelist("9999"):
-                return update_return_response(req_obj,'nousr')
+                bot.sendMessage(chat_id, msg_dict['beta'])
+                return update_return_response(req_obj,'beta')
             pattern = r"/(\w+)"
             match = re.match(pattern, chat_text)
             if match:
