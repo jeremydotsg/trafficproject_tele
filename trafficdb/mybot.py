@@ -3,7 +3,7 @@ from .models import *
 import requests
 import json
 from dotenv import load_dotenv
-from telepot.namedtuple import InputMediaPhoto
+from telepot.namedtuple import *
 import os
 import time
 import logging
@@ -24,13 +24,14 @@ photo_dict = {
     }
 
 caption_dict = {
-    "causeway1": "Wdls Causeway (Bridge).",
-    "causeway2": "Wdls Causeway (Twds Chkpt).",
-    "tuas1": "Tuas 2nd Link (Bridge).",
-    "tuas2": "Tuas 2nd Link (Twds Chkpt)."
+    "causeway1": "Wdls Causeway Camera",
+    "causeway2": "Wdls Checkpoint Camera",
+    "tuas1": "Tuas 2nd Link Camera",
+    "tuas2": "Tuas Checkpoint Camera"
     }
 msg_dict = {
-    "start" : "Hello!\nI am here to provide you useful information on the crossborder Bus Queues and more.",
+    "start" : "Hello!\n.I am here to provide you useful information for your SG Cross Border Travel. You may press the buttons below or see the commands from the menu. By using this Bot, you agree to the Terms and Conditions available at /tnc.",
+    "hello" : "Everything is fine.",
     "junk" : "Don't send me junk!",
     "notallowed" : "Not allowed to use this command!",
     "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
@@ -58,12 +59,16 @@ resp = {
 def process_telebot_request(request, bot):
 
     # Store the raw JSON and other details in the database
-    msg = json.loads(request.body)
-    update_id = msg["update_id"]
+    update = json.loads(request.body)
+    update_id = update["update_id"]
     is_group = False
     is_process = False
     
-    if "message" not in msg:   
+    message = extract_msg(update)
+    user_id = extract_sender(message)
+    print(user_id)
+    
+    if message is None:  
         x = TelegramRequest.objects.create(
             update_id=update_id,
             message="See Raw JSON.",  # Convert the message dict to a JSON string
@@ -73,40 +78,31 @@ def process_telebot_request(request, bot):
             from_last_name='Non-Msg-Update',
             from_username='Non-Msg-Update',
             from_language_code='',
-            raw_json=msg  # Store the entire raw JSON
+            raw_json=update  # Store the entire raw JSON
         )
         return update_return_response(x,'ignored')
-    elif "message" in msg:
-        message = msg["message"]
-        from_id = message["from"]["id"]
-        from_user = message["from"]
-        user_id = from_user.get('id')
+    elif message is not None:
         chat_id = message["chat"]["id"]
         msg_id = message["message_id"]
+        from_user = message["from"]
         req_obj = TelegramRequest.objects.create(
             update_id=update_id,
             message=message,  # Convert the message dict to a JSON string
-            from_id=from_id,
+            from_id=user_id, # If it is a bot, will extract from the chat object of a private chat
             from_is_bot=from_user.get('is_bot', False),
             from_first_name=from_user.get('first_name', ''),
             from_last_name=from_user.get('last_name', ''),
             from_username=from_user.get('username', ''),
             from_language_code=from_user.get('language_code', ''),
-            raw_json=msg  # Store the entire raw JSON
+            raw_json=update  # Store the entire raw JSON
         )
         chat_type = message["chat"]["type"]
-        chat_text = ""
         
         logger.info("Webhook :: Chat type: " + str(chat_type))
         
-        # x.update_response("")
-        
-        # Get the msg text and save the request
-        try:
-            chat_text = message["text"]
-        except Exception as e:
-            # Capture the message sent by 
-            logger.error("Webhook :: Ignore message and save it. {}".format(e))
+        chat_text = extract_chat_text(update)
+        if chat_text is None:
+            logger.info("Webhook :: Ignore message and save it.")
             return update_return_response(req_obj,'ignored')
                         
         # Process only if it is group or private chats
@@ -165,15 +161,18 @@ def process_telebot_request(request, bot):
         else:
             logger.info("Webhook :: Chat Type is not Group, Supergroup or Private. Ignoring request.")
             return True
-        
+
         if is_process:
             # Start Command - Display a welcome message
-            if command in ['start','hello']:
-                if not is_group:
-                    bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
-                else:
-                    bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], parse_mode="HTML")
+            if command == 'start':
+                send_start_reply(bot, chat_id, msg_id, is_group)
+                #     bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
+                # else:
+                #     bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], parse_mode="HTML")
                 return update_return_response(req_obj,'ok')
+            elif command == 'hello':
+                bot.sendMessage(chat_id, msg_dict['hello'])
+                return update_return_response(req_obj,'ok')          
             elif command == 'tnc':
                 if not is_group: bot.sendMessage(chat_id, msg_dict['tnc'] + msg_dict['lta_tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
                 return update_return_response(req_obj,'ok')
@@ -392,3 +391,57 @@ def update_return_response(tele_req, resp_code):
     tele_req.json_response = {"response": str(resp[resp_code])}
     tele_req.save()  # Save the updated response
     return tele_req.json_response
+
+def extract_msg(update):
+    message  = None
+    if "message" in update:
+        message = update["message"]
+    elif "callback_query" in update:
+        is_callback = True
+        message = update["callback_query"]["message"]
+    else:
+        print("Bot :: No Message")
+    return message
+
+def extract_chat_text(update):
+    chat_text = None
+    # If message is available, pull it from message.chat.text, otherwise if it is a callback, then callback.data
+    if "message" in update:
+        print("Message: " + str(update))
+        try:
+            chat_text = update["message"]["text"]
+        except Exception as e:
+            print(chat_text)
+            return chat_text
+    elif "callback_query" in update:
+        try:
+            chat_text = update["callback_query"]["data"]
+        except Exception as e:
+            return chat_text
+        print(chat_text)
+    else:
+        print("Bot :: No Message")
+    
+    print(chat_text)
+    return chat_text
+
+def extract_sender(message):
+    if message is not None:
+        if "chat" in message:
+            if "type" in message["chat"]:
+                message["chat"]["type"] == "private"
+                return message["chat"]["id"]
+        return message["from"]["id"]
+        
+    return None
+
+def send_start_reply(bot, chat_id, msg_id, is_group):
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+               [InlineKeyboardButton(text='Terms and Conditions', callback_data='/tnc'),
+               InlineKeyboardButton(text='Check or Update Queue', callback_data='/dashboard')],
+               [InlineKeyboardButton(text=caption_dict['causeway1'], callback_data='/causeway1'),
+               InlineKeyboardButton(text=caption_dict['causeway2'], callback_data='/causeway2')],
+               [InlineKeyboardButton(text=caption_dict['tuas1'], callback_data='/tuas1'),
+               InlineKeyboardButton(text=caption_dict['tuas2'], callback_data='/tuas2')],
+           ])
+    bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)
