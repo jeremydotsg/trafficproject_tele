@@ -30,7 +30,7 @@ caption_dict = {
     "tuas2": "Tuas Checkpoint Camera"
     }
 msg_dict = {
-    "start" : "Hello!\n.I am here to provide you useful information for your SG Cross Border Travel. You may press the buttons below or see the commands from the menu. By using this Bot, you agree to the Terms and Conditions available at /tnc.",
+    "start" : "Hello!\nI am here to provide you useful information for your SG Cross Border Travel. You may press the buttons below or see the commands from the menu. By using this Bot, you agree to the Terms and Conditions available at /tnc.",
     "hello" : "Everything is fine.",
     "junk" : "Don't send me junk!",
     "notallowed" : "Not allowed to use this command!",
