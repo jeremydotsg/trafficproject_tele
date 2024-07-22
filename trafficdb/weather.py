@@ -13,21 +13,20 @@ last_api_call_time = None
 last_api_call_result = None
 
 def call_my_api():
-    return None
     headers = {'accept': 'application/json'}
     
     # Get the URL from environment variable
     url = os.getenv('MY_WEATHER_API_URL')
 
     # Make the request
-    #response = requests.get(url, headers=headers)
-    # if response.status_code == 200:
-    #     my_weather_json = response.json()
-    #     #print(json.dumps(data, indent=4))
-    #     my_weather_json = convert_to_eng(my_weather_json)
-    #     print("Called API.")
-    #     return my_weather_json
-    # return None
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        my_weather_json = response.json()
+        #print(json.dumps(data, indent=4))
+        my_weather_json = convert_to_eng(my_weather_json)
+        print("Called API.")
+        return my_weather_json
+    return None
 
 def call_sg_api():
     headers = {'accept': 'application/json'}
