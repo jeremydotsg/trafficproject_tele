@@ -45,13 +45,13 @@ def get_weather():
     global last_api_call_time
     global last_api_call_result
     if last_api_call_time is None or (datetime.datetime.now() - last_api_call_time).total_seconds() >= 300:
-        my_weather_json = call_my_api()
+        #my_weather_json = call_my_api()
         sg_weather_json = call_sg_api()
-        my_weather = parse_my_weather(my_weather_json, True)
+        #my_weather = parse_my_weather(my_weather_json, True)
         sg_weather = parse_sg_weather(sg_weather_json)
-        last_api_call_result = sg_weather + my_weather
+        last_api_call_result = sg_weather #+ my_weather
         last_api_call_time = datetime.datetime.now()
-        return sg_weather + my_weather
+        return sg_weather #+ my_weather
     else:
         return last_api_call_result
     return "Not Available."
