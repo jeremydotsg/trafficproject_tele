@@ -10,6 +10,7 @@ import logging
 from django.db.models import Q
 import re
 from aiohttp.web_response import json_response
+from . import weather
 
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -39,8 +40,8 @@ msg_dict = {
     "wait" : "Wait a moment...",
     "lta_tnc" : "\nNote: This bot uses the LTA's Traffic Images dataset accessed at the time of request and made available under the terms of the <a href=\"https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html\">Singapore Open Data Licence version 1.0</a>.",
     "streamnote" : "Note: The bot owners are not associated with the channels in the links.\nThe links are provided for informational purposes only. We do not guarantee accuracy, completeness, or suitability and do not accept any liabilities over the use of the information.\n\nBy proceeding, you accept the risks and do not hold us liable for anything arises from the use of the information.",
-    "beta"  : "Currently in limited beta mode.",
-    "tnc" : "<b>Terms & Conditions</b>\nBy interacting with this Bot, you agree for the Bot to receive, store, process and exchange the information received from the Telegram.\nIn order to process your request, the Bot may exchange data in your request with Third Party Service Providers in whole or part.\nThe information provided by these Third Party Service Provider is not screened. You accept all risks and liabilities associated with using the information provided by the Third Party Service Provider through the Bot.\n"
+    "beta"  : "Beta mode: Currently in limited beta mode. Watch out when this bot is available.",
+    "tnc" : "<b>Terms & Conditions</b>\nBy interacting with this Bot, you agree to the <a href=\"https://mygowhere.pythonanywhere.com/trafficdb/disclaimer\">disclaimer published here</a>.\n"
 }
 
 resp = {
@@ -65,8 +66,8 @@ def process_telebot_request(request, bot):
     is_process = False
     
     message = extract_msg(update)
-    user_id = extract_sender(message)
-    print(user_id)
+    sender = extract_sender(message)
+    print(sender)
     
     if message is None:  
         x = TelegramRequest.objects.create(
@@ -88,16 +89,16 @@ def process_telebot_request(request, bot):
         req_obj = TelegramRequest.objects.create(
             update_id=update_id,
             message=message,  # Convert the message dict to a JSON string
-            from_id=user_id, # If it is a bot, will extract from the chat object of a private chat
-            from_is_bot=from_user.get('is_bot', False),
-            from_first_name=from_user.get('first_name', ''),
-            from_last_name=from_user.get('last_name', ''),
-            from_username=from_user.get('username', ''),
+            from_id=sender.get('id','999999999'), # If it is a bot, will extract from the chat object of a private chat
+            from_is_bot=sender.get('is_bot', False),
+            from_first_name=sender.get('first_name', ''),
+            from_last_name=sender.get('last_name', ''),
+            from_username=sender.get('username', ''),
             from_language_code=from_user.get('language_code', ''),
             raw_json=update  # Store the entire raw JSON
         )
         chat_type = message["chat"]["type"]
-        
+        user_id = sender.get('id','999999999')
         logger.info("Webhook :: Chat type: " + str(chat_type))
         
         chat_text = extract_chat_text(update)
@@ -166,15 +167,15 @@ def process_telebot_request(request, bot):
             # Start Command - Display a welcome message
             if command == 'start':
                 send_start_reply(bot, chat_id, msg_id, is_group)
-                #     bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
-                # else:
-                #     bot.sendMessage(chat_id, msg_dict['start'] + '\n\n' + msg_dict['tnc'] + msg_dict['lta_tnc'], parse_mode="HTML")
                 return update_return_response(req_obj,'ok')
             elif command == 'hello':
                 bot.sendMessage(chat_id, msg_dict['hello'])
-                return update_return_response(req_obj,'ok')          
+                return update_return_response(req_obj,'ok')      
+            elif command == 'weather':
+                bot.sendMessage(chat_id, weather.get_weather(), parse_mode="HTML")
+                return update_return_response(req_obj,'ok')      
             elif command == 'tnc':
-                if not is_group: bot.sendMessage(chat_id, msg_dict['tnc'] + msg_dict['lta_tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
+                if not is_group: bot.sendMessage(chat_id, msg_dict['tnc'], reply_to_message_id=msg_id, parse_mode="HTML")
                 return update_return_response(req_obj,'ok')
             elif command == 'dashboard':
                 bot.sendMessage(chat_id, msg_dict['dashboard'], reply_to_message_id=msg_id) if not is_group else bot.sendMessage(chat_id, msg_dict['dashboard'])
@@ -426,14 +427,21 @@ def extract_chat_text(update):
     return chat_text
 
 def extract_sender(message):
+    sender = None
+    from_sender = None
+    chat_sender = None
     if message is not None:
-        if "chat" in message:
-            if "type" in message["chat"]:
-                message["chat"]["type"] == "private"
-                return message["chat"]["id"]
-        return message["from"]["id"]
-        
-    return None
+        # Try extracting the "from"
+        if "from" in message:
+            from_sender = message["from"]
+            if from_sender["is_bot"]:
+                if "chat" in message:
+                    if "type" in message["chat"]:
+                        if message["chat"]["type"] == "private":
+                            chat_sender = message["chat"]
+                            return chat_sender
+            return from_sender
+    return sender
 
 def send_start_reply(bot, chat_id, msg_id, is_group):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
