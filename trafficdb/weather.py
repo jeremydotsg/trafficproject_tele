@@ -122,12 +122,12 @@ def parse_sg_weather(weather_data):
         # Print general information
         general_info = weather_data["data"]["records"][0]["general"]
         weather_str += f"<b>Singapore Weather Forecast for {general_info['validPeriod']['text']}</b>"
-        weather_str += "\nTemperature | Humidity | Forecast | Wind Speed"
+        weather_str += "\nTemperature | Humidity | Forecast | Wind Speed (Direction)"
         weather_str += f"\n{general_info['temperature']['low']}°C - {general_info['temperature']['high']}°C | "
         weather_str += f" {general_info['relativeHumidity']['low']}% - {general_info['relativeHumidity']['high']}% | "
         weather_str += f" {general_info['forecast']['text']} | "
         weather_str += f" {general_info['wind']['speed']['low']} - {general_info['wind']['speed']['high']} km/h "
-        weather_str += f" {general_info['wind']['direction']} "
+        weather_str += f" ({general_info['wind']['direction']}) "
         weather_str += "\n\n"
     
         # Print periods information
