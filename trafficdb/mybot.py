@@ -11,6 +11,7 @@ from django.db.models import Q
 import re
 from aiohttp.web_response import json_response
 from . import weather
+from . import botqueue
 
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -54,6 +55,7 @@ resp = {
     'junk' : 'Junk received from user.',
     'generic' : 'Error. See logs.',
     'beta' : 'Beta Mode: User not in whitelist.',
+    'processed' : 'Processed. See the addtional response for any errors.',
     'ok' : 'Ok, request processed.'
     }
 # Contains all the methods to process bot requests
@@ -64,10 +66,13 @@ def process_telebot_request(request, bot):
     update_id = update["update_id"]
     is_group = False
     is_process = False
+    has_param = False
     
     message = extract_msg(update)
     sender = extract_sender(message)
-    print(sender)
+    command = ""
+    param = ""
+    #print(sender)
     
     if message is None:  
         x = TelegramRequest.objects.create(
@@ -141,19 +146,31 @@ def process_telebot_request(request, bot):
             
         elif chat_type == "private":
             logger.info("Webhook :: Private Message from user " + str(user_id))
-            if check_requests_rate_and_block(bot, user_id,chat_id):
-                logger.info('Webhook :: Rate Check: User is blacklisted')
-                return update_return_response(req_obj,'rate')
+            # Bypass Rate Limit Check and use the botqueue's own rate limit check
+            if not chat_text.startswith("/queue"):
+                if check_requests_rate_and_block(bot, user_id,chat_id):
+                    logger.info('Webhook :: Rate Check: User is blacklisted')
+                    return update_return_response(req_obj,'rate')
+            # Still check for whitelists
             if not check_whitelist(user_id) and not check_whitelist("9999"):
                 bot.sendMessage(chat_id, msg_dict['beta'])
                 return update_return_response(req_obj,'beta')
-            pattern = r"/(\w+)"
+            pattern = r"\/(\w+)\s?([\w\s]*)"
+            # print("Try parsing command: " + chat_text)
             match = re.match(pattern, chat_text)
             if match:
-                command = match.group(1) 
+                command, param = match.groups()
                 is_process = True
+                if param:
+                    has_param = True
+                    #print("Parsed Param: " + param)
+                else:
+                    param = ""
+                #print("Parsed Command: " + command)
+                
                 logger.info("Webhook :: Private command " + str(command) + " from user " + str(user_id))
             else:
+                print("No Command: " + str(chat_text))
                 logger.info("Webhook :: Private command :: Wrong Pattern.")
                 return update_return_response(req_obj,'wrongptn')
             # else:
@@ -161,11 +178,22 @@ def process_telebot_request(request, bot):
         
         else:
             logger.info("Webhook :: Chat Type is not Group, Supergroup or Private. Ignoring request.")
-            return True
+            return update_return_response(req_obj,'junk')
 
         if is_process:
             # Start Command - Display a welcome message
-            if command == 'start':
+            if has_param:
+                if command in ['queueb','queuec','queued']:
+                    res = botqueue.handle_command(bot, sender, user_id, chat_id, command, param, update_id, is_group)
+                    return update_return_response(req_obj,'ok', res)
+                else:
+                    # print("Command not supposed to have parameters." + str(command))
+                    bot.sendMessage(chat_id, msg_dict['junk'])
+                    return update_return_response(req_obj,'junk')
+            if command == 'queuestart':
+                res = botqueue.handle_command(bot, sender, user_id, chat_id, command, param, update_id, is_group)
+                return update_return_response(req_obj,'ok', res)
+            elif command == 'start':
                 send_start_reply(bot, chat_id, msg_id, is_group)
                 return update_return_response(req_obj,'ok')
             elif command == 'hello':
@@ -183,7 +211,7 @@ def process_telebot_request(request, bot):
             # Photo Commands - Send the photos over
             elif command in ['causeway1','causeway2','tuas1','tuas2']:
                 sendReplyPhoto(bot, command,chat_id,msg_id, is_group)
-                return update_return_response(req_obj,'ok')
+                return update_return_response(req_obj,'ok')            
             # Whitelist users (and groups) only commands
             elif command in ['reload','showall']:
                 if check_whitelist(user_id):
@@ -387,10 +415,14 @@ def check_whitelist_group(group_id):
     
     return False
 
-def update_return_response(tele_req, resp_code):
+def update_return_response(tele_req, resp_code, manual_resp=None):
     # Assuming tele_req is a TelegramRequest object
-    tele_req.json_response = {"response": str(resp[resp_code])}
-    tele_req.save()  # Save the updated response
+    if manual_resp:
+        tele_req.json_response = {"response": str(resp[resp_code]), "bot_queue_resp": manual_resp}
+        tele_req.save()  # Save the updated response
+    else: 
+        tele_req.json_response = {"response": str(resp[resp_code])}
+        tele_req.save()  # Save the updated response
     return tele_req.json_response
 
 def extract_msg(update):
@@ -451,5 +483,6 @@ def send_start_reply(bot, chat_id, msg_id, is_group):
                InlineKeyboardButton(text=caption_dict['causeway2'], callback_data='/causeway2')],
                [InlineKeyboardButton(text=caption_dict['tuas1'], callback_data='/tuas1'),
                InlineKeyboardButton(text=caption_dict['tuas2'], callback_data='/tuas2')],
+               [InlineKeyboardButton(text='SG and JB Weather', callback_data='/weather')]
            ])
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)

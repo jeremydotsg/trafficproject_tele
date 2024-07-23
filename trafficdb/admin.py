@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import Direction, Queue, QueueType, QueueLength,QueueStatus
-from .models import Category, Comment, Post, BusArrival, BusStop, TelegramRequest, BlockedTgUser, WhitelistTgUser, WhitelistGroup
+from .models import *
 
 from django.contrib import admin
 
@@ -109,6 +108,7 @@ class QueueStatusAdmin(admin.ModelAdmin):
         'queue',
         'queueLength',
         'queueIP',
+        'queueUserId',
         'createdTime',
         'modifiedTime',
     )
@@ -116,6 +116,7 @@ class QueueStatusAdmin(admin.ModelAdmin):
         'id',
         'queue',
         'queueIP',
+        'queueUserId',
         'queueLength',
         'createdTime',
         'modifiedTime',
@@ -164,6 +165,12 @@ class WhitelistTgUserAdmin(admin.ModelAdmin):
 class WhitelistGroupAdmin(admin.ModelAdmin):
     list_display = ('group_id', 'created_at', 'start_at', 'end_at', 'remarks')
     search_fields = ('group_id', 'remarks')
+
+@admin.register(TgQueueUpdate)
+class TgQueueUpdateAdmin(admin.ModelAdmin):
+    list_display = ('update_id', 'command', 'parameters', 'user_id', 'created_at', 'modified_at')
+    search_fields = ('update_id', 'command', 'parameters', 'user_id')
+    list_filter = ('update_id', 'command', 'parameters', 'user_id', 'created_at', 'modified_at')
     
 def _register(model, admin_class):
     admin.site.register(model, admin_class)

@@ -284,7 +284,7 @@ def bus_stop_view(request):
 def webhook(request,ranid):
     if request.method == 'POST' and randstring == ranid:
         msg = json.loads(request.body)
-        logger.info('Webhook :: Msg: ' + str(msg))
+        logger.info('Webhook :: Msg: ' + str(json.dumps(msg)))
         # Process the response
         resp = process_telebot_request(request, bot)
         logger.info('Webhook :: Response :: ' + str(resp))

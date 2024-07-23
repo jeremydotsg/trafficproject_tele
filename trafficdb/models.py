@@ -56,6 +56,7 @@ class QueueStatus(models.Model):
     queue = models.ForeignKey(Queue, on_delete=models.CASCADE)
     queueLength = models.ForeignKey(QueueLength, on_delete=models.CASCADE)
     queueIP = models.CharField(max_length=50,default=None, blank=True, null=True)
+    queueUserId = models.BigIntegerField(default=None, blank=True, null=True)
     createdTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     modifiedTime = models.DateTimeField(auto_now=False,auto_now_add=True)
     class Meta:
@@ -219,3 +220,14 @@ class WhitelistGroup(models.Model):
     #     if not self.id:  # If creating a new entry
     #         self.end_at = timezone.now() + timedelta(minutes=15)
     #     super().save(*args, **kwargs)
+
+class TgQueueUpdate(models.Model):
+    update_id = models.BigIntegerField()
+    command = models.CharField(max_length=255, blank=True, null=True)
+    parameters = models.CharField(max_length=255, blank=True, null=True)
+    user_id = models.BigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"W ID: {self.update_id}"
