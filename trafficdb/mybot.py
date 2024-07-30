@@ -56,7 +56,8 @@ resp = {
     'generic' : 'Error. See logs.',
     'beta' : 'Beta Mode: User not in whitelist.',
     'processed' : 'Processed. See the addtional response for any errors.',
-    'ok' : 'Ok, request processed.'
+    'ok' : 'Ok, request processed.',
+    'batchoff': 'Batch job turned off due to maintenance or beta mode.'
     }
 # Contains all the methods to process bot requests
 def process_telebot_request(request, bot):
@@ -417,12 +418,15 @@ def check_whitelist_group(group_id):
 
 def update_return_response(tele_req, resp_code, manual_resp=None):
     # Assuming tele_req is a TelegramRequest object
-    if manual_resp:
-        tele_req.json_response = {"response": str(resp[resp_code]), "bot_queue_resp": manual_resp}
-        tele_req.save()  # Save the updated response
-    else: 
-        tele_req.json_response = {"response": str(resp[resp_code])}
-        tele_req.save()  # Save the updated response
+    if tele_req:
+        if manual_resp:
+            tele_req.json_response = {"response": str(resp[resp_code]), "bot_queue_resp": manual_resp}
+            tele_req.save()  # Save the updated response
+        else: 
+            tele_req.json_response = {"response": str(resp[resp_code])}
+            tele_req.save()  # Save the updated response
+    else:
+        return {"response": str(resp[resp_code])}
     return tele_req.json_response
 
 def extract_msg(update):
@@ -486,3 +490,16 @@ def send_start_reply(bot, chat_id, msg_id, is_group):
                [InlineKeyboardButton(text='SG and JB Weather', callback_data='/weather')]
            ])
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)
+    
+    
+def process_routine_job(request, bot):
+    chat_list_str = os.getenv('CHAT_ID', '')
+    if not check_whitelist("9999"):
+        return update_return_response(None,'batchoff')
+    # Split the string into a list by commas
+    chat_list = chat_list_str.split(',')
+    for chat_id in chat_list:
+        sendReplyPhotoGroup(bot, chat_id, '', True)
+        
+    return update_return_response(None,'ok')
+    

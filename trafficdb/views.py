@@ -282,12 +282,16 @@ def bus_stop_view(request):
 
 @csrf_exempt
 def webhook(request,ranid):
-    if request.method == 'POST' and randstring == ranid:
+    if request.method == 'POST' and ranid == randstring:
         msg = json.loads(request.body)
         logger.info('Webhook :: Msg: ' + str(json.dumps(msg)))
         # Process the response
         resp = process_telebot_request(request, bot)
         logger.info('Webhook :: Response :: ' + str(resp))
+        return JsonResponse(resp, status=200)
+    elif request.method == 'POST' and ranid == 'cron':
+        #msg = json.loads(request.body)
+        resp = process_routine_job(request, bot)
         return JsonResponse(resp, status=200)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
