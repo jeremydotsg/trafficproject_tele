@@ -131,7 +131,7 @@ def parse_sg_weather(weather_data):
         weather_str += "\n\n"
     
         # Print periods information
-        # periods = weather_data["data"]["records"][0]["periods"]
+        periods = weather_data["data"]["records"][0]["periods"]
         for period in periods:
             time_period = period["timePeriod"]["text"]
             regions = period["regions"]
