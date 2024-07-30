@@ -132,14 +132,14 @@ def parse_sg_weather(weather_data):
     
         # Print periods information
         # periods = weather_data["data"]["records"][0]["periods"]
-        # for period in periods:
-        #     time_period = period["timePeriod"]["text"]
-        #     regions = period["regions"]
-        #     weather_str += f"Time Period: {time_period}"
-        #     weather_str += "\nNorth | South | Central | East | West\n"
-        #     weather_str += regions["north"]["text"] + " | " + regions["south"]["text"] + " | " + regions["central"]["text"] + " | " + regions["east"]["text"] + " | " + regions["west"]["text"]
-        #     weather_str += "\n"
-        #
+        for period in periods:
+            time_period = period["timePeriod"]["text"]
+            regions = period["regions"]
+            weather_str += f"Time Period: {time_period}"
+            weather_str += "\nNorth | South | Central | East | West\n"
+            weather_str += regions["north"]["text"] + " | " + regions["south"]["text"] + " | " + regions["central"]["text"] + " | " + regions["east"]["text"] + " | " + regions["west"]["text"]
+            weather_str += "\n"
+        
     else:
         weather_str = "SG Weather Data Not Available."
 
