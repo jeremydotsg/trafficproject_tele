@@ -1,10 +1,11 @@
 import requests
 import json
-import datetime
+from datetime import datetime
 import time
 import os
 import logging
 from dotenv import load_dotenv
+import pytz
 
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -61,7 +62,7 @@ def get_weather():
         my_weather = parse_my_weather(my_weather_json, True)
         sg_weather = parse_sg_weather(sg_weather_json)
         last_api_call_result = sg_weather + my_weather
-        last_api_call_time = datetime.datetime.now()
+        last_api_call_time = datetime.now()
         return sg_weather + my_weather
     else:
         return last_api_call_result
@@ -104,25 +105,28 @@ def convert_to_eng(my_weather_json):
 def parse_my_weather(my_weather_json, today_only):
     display_string = ""
     if my_weather_json:
+        singapore_tz = pytz.timezone('Asia/Singapore')
+        today_date = datetime.now(singapore_tz).strftime("%Y-%m-%d")
         my_json = my_weather_json
         if today_only:
-            my_json = [my_weather_json[6]]
+            my_json = [entry for entry in my_weather_json if entry["date"] == today_date]
         for entry in my_json:
-            display_string += "<b>Johor Bahru Weather forecast for " + entry["date"]
-            display_string += "</b>\nMorning | Afternoon | Night\n"
-            display_string += entry["morning_forecast"] + " | " + entry["afternoon_forecast"] +" | " + entry["night_forecast"]
-            display_string += "\nSummary: " + entry["summary_forecast"] + " " +  entry["summary_when"] + "\n"
+            display_string += "<b><u>Johor Bahru Weather forecast (" + entry["date"] + ")</u></b>"
+            display_string += "\nMorning | Afternoon | Night\n"
+            display_string += entry["morning_forecast"] + " | " + entry["afternoon_forecast"] + " | " + entry["night_forecast"]
+            display_string += "\nSummary: " + entry["summary_forecast"] + " When: " + entry["summary_when"] + "\n"
     else:
         display_string = "MY Weather Data Not Available."
     return display_string
+
 
 def parse_sg_weather(weather_data):
     weather_str = ""
     if weather_data:
         # Print general information
         general_info = weather_data["data"]["records"][0]["general"]
-        weather_str += f"<b>Singapore Weather Forecast for {general_info['validPeriod']['text']}</b>"
-        weather_str += "\nTemperature | Humidity | Forecast | Wind Speed (Direction)"
+        weather_str += f"<b><u>Singapore Weather Forecast ({general_info['validPeriod']['text']})</u></b>"
+        weather_str += "\n<u>Temperature | Humidity | Forecast | Wind Speed (Direction)</u>"
         weather_str += f"\n{general_info['temperature']['low']}°C - {general_info['temperature']['high']}°C | "
         weather_str += f" {general_info['relativeHumidity']['low']}% - {general_info['relativeHumidity']['high']}% | "
         weather_str += f" {general_info['forecast']['text']} | "
@@ -132,13 +136,14 @@ def parse_sg_weather(weather_data):
     
         # Print periods information
         periods = weather_data["data"]["records"][0]["periods"]
+        if periods:
+            weather_str += "<u>North | South | Central | East | West</u>\n"
         for period in periods:
             time_period = period["timePeriod"]["text"]
             regions = period["regions"]
-            weather_str += f"<b>For {time_period}</b>"
-            weather_str += "\nNorth | South | Central | East | West\n"
+            weather_str += f"<u>{time_period}</u>\n<i>"
             weather_str += regions["north"]["text"] + " | " + regions["south"]["text"] + " | " + regions["central"]["text"] + " | " + regions["east"]["text"] + " | " + regions["west"]["text"]
-            weather_str += "\n\n"
+            weather_str += "</i>\n\n"
         
     else:
         weather_str = "SG Weather Data Not Available."
