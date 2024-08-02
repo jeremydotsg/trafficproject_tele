@@ -6,6 +6,7 @@ import os
 import logging
 from dotenv import load_dotenv
 import pytz
+from collections import defaultdict
 
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -72,26 +73,26 @@ def convert_to_eng(my_weather_json):
     if my_weather_json:
         eng_json = None
         my_eng_dict = {
-            "Berjerebu" : "Hazy.",
-            "Tiada hujan" : "No rain.",
-            "Hujan" : "Rain.",
-            "Hujan di beberapa tempat" : "Scattered rain.",
-            "Hujan di satu dua tempat" : "Isolated Rain.",
-            "Hujan di satu dua tempat di kawasan pantai" : "Isolated rain over coastal areas.",
-            "Hujan di satu dua tempat di kawasan pedalaman" : "Isolated rain over inland areas.",
-            "Ribut petir" : "Thunderstorms.",
-            "Ribut petir di beberapa tempat" : "Scattered thunderstorms.",
-            "Ribut petir di beberapa tempat di kawasan pedalaman" : "Scattered thunderstorms over inland areas.",
-            "Ribut petir di satu dua tempat" : "Isolated thunderstorms.",
-            "Ribut petir di satu dua tempat di kawasan pantai" : "Isolated thunderstorms over coastal areas.",
-            "Ribut petir di satu dua tempat di kawasan pedalaman" : "Isolated thunderstorms over inland areas.",
-            "Pagi" : "Morning.",
-            "Malam" : "Night.",
-            "Petang" : "Afternoon.",
-            "Pagi dan Petang" : "Morning and Afternoon.",
-            "Pagi dan Malam" : "Morning and Night.",
-            "Petang dan Malam" : "Afternoon and Night.",
-            "Sepanjang Hari" : "Throughout the Day."
+            "Berjerebu" : "Hazy",
+            "Tiada hujan" : "No rain",
+            "Hujan" : "Rain",
+            "Hujan di beberapa tempat" : "Scattered rain",
+            "Hujan di satu dua tempat" : "Isolated Rain",
+            "Hujan di satu dua tempat di kawasan pantai" : "Isolated rain over coastal areas",
+            "Hujan di satu dua tempat di kawasan pedalaman" : "Isolated rain over inland areas",
+            "Ribut petir" : "Thunderstorms",
+            "Ribut petir di beberapa tempat" : "Scattered thunderstorms",
+            "Ribut petir di beberapa tempat di kawasan pedalaman" : "Scattered thunderstorms over inland areas",
+            "Ribut petir di satu dua tempat" : "Isolated thunderstorms",
+            "Ribut petir di satu dua tempat di kawasan pantai" : "Isolated thunderstorms over coastal areas",
+            "Ribut petir di satu dua tempat di kawasan pedalaman" : "Isolated thunderstorms over inland areas",
+            "Pagi" : "Morning",
+            "Malam" : "Night",
+            "Petang" : "Afternoon",
+            "Pagi dan Petang" : "Morning and Afternoon",
+            "Pagi dan Malam" : "Morning and Night",
+            "Petang dan Malam" : "Afternoon and Night",
+            "Sepanjang Hari" : "Throughout the Day"
             }
         
         for entry in my_weather_json:
@@ -103,51 +104,87 @@ def convert_to_eng(my_weather_json):
     return my_weather_json
 
 def parse_my_weather(my_weather_json, today_only):
+    if not my_weather_json:
+        return "MY Weather Data Not Available."
+
+    singapore_tz = pytz.timezone('Asia/Singapore')
+    today_date = datetime.now(singapore_tz).strftime("%Y-%m-%d")
+    my_json = [entry for entry in my_weather_json if not today_only or entry["date"] == today_date]
+
     display_string = ""
-    if my_weather_json:
-        singapore_tz = pytz.timezone('Asia/Singapore')
-        today_date = datetime.now(singapore_tz).strftime("%Y-%m-%d")
-        my_json = my_weather_json
-        if today_only:
-            my_json = [entry for entry in my_weather_json if entry["date"] == today_date]
-        for entry in my_json:
-            display_string += "<b><u>Johor Bahru Weather forecast (" + entry["date"] + ")</u></b>"
-            display_string += "\nMorning | Afternoon | Night\n"
-            display_string += entry["morning_forecast"] + " | " + entry["afternoon_forecast"] + " | " + entry["night_forecast"]
-            display_string += "\nSummary: " + entry["summary_forecast"] + " When: " + entry["summary_when"] + "\n"
-    else:
-        display_string = "MY Weather Data Not Available."
+    for entry in my_json:
+        display_string += f"<b><u>Johor Bahru Weather forecast ({entry['date']})</u></b>\n"
+        display_string += f"Outlook: {entry['summary_forecast']} in the {entry['summary_when']}.\n\n"
+        display_string += f"Morning: {entry['morning_forecast']}.\n"
+        display_string += f"Afternoon: {entry['afternoon_forecast']}.\n"
+        display_string += f"Night: {entry['night_forecast']}.\n"
+    
     return display_string
 
 
-def parse_sg_weather(weather_data):
-    weather_str = ""
-    if weather_data:
-        # Print general information
-        general_info = weather_data["data"]["records"][0]["general"]
-        weather_str += f"<b><u>Singapore Weather Forecast ({general_info['validPeriod']['text']})</u></b>"
-        weather_str += "\n<u>Temperature | Humidity | Forecast | Wind Speed (Direction)</u>"
-        weather_str += f"\n{general_info['temperature']['low']}°C - {general_info['temperature']['high']}°C | "
-        weather_str += f" {general_info['relativeHumidity']['low']}% - {general_info['relativeHumidity']['high']}% | "
-        weather_str += f" {general_info['forecast']['text']} | "
-        weather_str += f" {general_info['wind']['speed']['low']} - {general_info['wind']['speed']['high']} km/h "
-        weather_str += f" ({general_info['wind']['direction']}) "
-        weather_str += "\n\n"
-    
-        # Print periods information
-        periods = weather_data["data"]["records"][0]["periods"]
-        if periods:
-            weather_str += "<u>North | South | Central | East | West</u>\n"
-        for period in periods:
-            time_period = period["timePeriod"]["text"]
-            regions = period["regions"]
-            weather_str += f"<u>{time_period}</u>\n<i>"
-            weather_str += regions["north"]["text"] + " | " + regions["south"]["text"] + " | " + regions["central"]["text"] + " | " + regions["east"]["text"] + " | " + regions["west"]["text"]
-            weather_str += "</i>\n\n"
-        
-    else:
-        weather_str = "SG Weather Data Not Available."
+def parse_sg_weather(sg_weather_data):
+    if not sg_weather_data:
+        return "SG Weather Data Not Available."
 
+    else:
+        record = sg_weather_data['data']['records'][0]
+        general = record['general']
+        periods = record['periods']
+        
+        forecast_emojis = {
+            "Fair": "☀️",
+            "Fair (Day)": "🌞",
+            "Fair (Night)": "🌜",
+            "Fair and Warm": "🌡️",
+            "Partly Cloudy": "🌤️",
+            "Partly Cloudy (Day)": "⛅",
+            "Partly Cloudy (Night)": "☁️🌙",
+            "Cloudy": "☁️",
+            "Hazy": "🌫️",
+            "Slightly Hazy": "🌁",
+            "Windy": "🌬️",
+            "Mist": "🌁",
+            "Fog": "🌫️",
+            "Light Rain": "🌦️",
+            "Moderate Rain": "🌧️",
+            "Heavy Rain": "🌧️🌧️",
+            "Passing Showers": "🌦️",
+            "Light Showers": "🌦️",
+            "Showers": "🌧️",
+            "Heavy Showers": "🌧️🌧️",
+            "Thundery Showers": "⛈️",
+            "Heavy Thundery Showers": "⛈️⛈️",
+            "Heavy Thundery Showers with Gusty Winds": "⛈️🌬️"
+        }
+        # Display Summary
+        weather_str = ""
+        
+        weather_str += f"<b><u>Singapore Weather Forecast for {general['validPeriod']['text']}.</u></b>\n"
+        weather_str +=f"Outlook: {forecast_emojis.get(general['forecast']['text'], general['forecast']['text'])}"
+        weather_str +=f"\n🌡️: {general['temperature']['low']} - {general['temperature']['high']} {general['temperature']['unit']}. "
+        weather_str +=f"\n💧: {general['relativeHumidity']['low']}% - {general['relativeHumidity']['high']}% "
+        weather_str +=f"\n🌬️: {general['wind']['speed']['low']} - {general['wind']['speed']['high']} km/h ({general['wind']['direction']})\n"
+           
+        # Display periods
+        for period in periods:
+            weather_str += f"\n{period['timePeriod']['text']}\n"
+            forecast_groups = defaultdict(list)
+            for region, forecast in period['regions'].items():
+                forecast_groups[forecast['text']].append(region.capitalize())
+            
+            for forecast_text, regions in forecast_groups.items():
+                if len(regions) == 5:  # All regions
+                    weather_str += f"   All regions: {forecast_emojis.get(forecast_text,forecast_text)}\n"
+                else:
+                    regions_str = ', '.join(regions)
+                    weather_str += f"   {regions_str}: {forecast_emojis.get(forecast_text,forecast_text)}\n"
+        
+        
+        weather_str += "\n"
+    
     return weather_str
+
+
+
 
     
