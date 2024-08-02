@@ -56,7 +56,7 @@ def call_sg_api():
 def get_weather():
     global last_api_call_time
     global last_api_call_result
-    if last_api_call_time is None or (datetime.datetime.now() - last_api_call_time).total_seconds() >= 3600:
+    if last_api_call_time is None or (datetime.now() - last_api_call_time).total_seconds() >= 3600:
         my_weather_json = call_my_api()
         sg_weather_json = call_sg_api()
         my_weather = parse_my_weather(my_weather_json, True)
