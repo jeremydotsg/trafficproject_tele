@@ -32,11 +32,11 @@ caption_dict = {
     "tuas2": "Tuas Checkpoint Camera"
     }
 msg_dict = {
-    "start" : "Hello!\nI am here to provide you useful information for your SG Cross Border Travel. You may press the buttons below or see the commands from the menu. By using this Bot, you agree to the Terms and Conditions available at /tnc.",
-    "hello" : "Everything is fine.",
-    "junk" : "Don't send me junk!",
-    "notallowed" : "Not allowed to use this command!",
-    "dashboard" : "Check out the dashboard. https://t.me/CT_IMG_BOT/dashboard",
+    "start" : "Hello!\n\nTalk to me about SG JB Cross Border Travel. Here is what I can help you with!\n\nBy using this Bot, you agree to the Terms and Conditions viewable at /tnc.",
+    "hello" : "Gwenchana... Everything is fine.",
+    "junk" : "I don't understand you. Don't pay play!",
+    "notallowed" : "Unchartered waters ahead!",
+    "dashboard" : "Check out the crowdsourced Bus or Checkpoint Queue! https://t.me/CT_IMG_BOT/dashboard",
     "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!",
     "wait" : "Wait a moment...",
     "lta_tnc" : "\nNote: This bot uses the LTA's Traffic Images dataset accessed at the time of request and made available under the terms of the <a href=\"https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html\">Singapore Open Data Licence version 1.0</a>.",
@@ -481,8 +481,8 @@ def extract_sender(message):
 
 def send_start_reply(bot, chat_id, msg_id, is_group):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="*NEW* Report Bus & Custom Queue", callback_data='/queuestart')],
-                [InlineKeyboardButton(text='Check Bus & Custom Queue (Web)', callback_data='/dashboard')],
+                [InlineKeyboardButton(text="*NEW* Report Bus & Checkpoint Queue", callback_data='/queuestart')],
+                [InlineKeyboardButton(text='Check Bus & Checkpoint Queue (Web)', callback_data='/dashboard')],
                 [InlineKeyboardButton(text='SG & JB Weather', callback_data='/weather')],
                 [InlineKeyboardButton(text=caption_dict['causeway1'], callback_data='/causeway1'),
                  InlineKeyboardButton(text=caption_dict['causeway2'], callback_data='/causeway2')],
