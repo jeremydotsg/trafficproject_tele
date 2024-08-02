@@ -145,8 +145,8 @@ def check_rate_limit(bot, chat_id):
     if whitelist_records.exists():
         print("whitelist")
         return False
-    else:
-        return True
+    # else:
+    #     return True
     blocked_records = BlockedTgUser.objects.filter(
         Q(from_id=chat_id),
         Q(start_at__lt=now),
