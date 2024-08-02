@@ -481,13 +481,14 @@ def extract_sender(message):
 
 def send_start_reply(bot, chat_id, msg_id, is_group):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-               [InlineKeyboardButton(text='Terms and Conditions', callback_data='/tnc'),
-               InlineKeyboardButton(text='Check or Update Queue', callback_data='/dashboard')],
-               [InlineKeyboardButton(text=caption_dict['causeway1'], callback_data='/causeway1'),
-               InlineKeyboardButton(text=caption_dict['causeway2'], callback_data='/causeway2')],
-               [InlineKeyboardButton(text=caption_dict['tuas1'], callback_data='/tuas1'),
-               InlineKeyboardButton(text=caption_dict['tuas2'], callback_data='/tuas2')],
-               [InlineKeyboardButton(text='SG and JB Weather', callback_data='/weather')]
+                [InlineKeyboardButton(text="*NEW* Report Bus & Custom Queue", callback_data='/queuestart')],
+                [InlineKeyboardButton(text='Check Bus & Custom Queue (Web)', callback_data='/dashboard')],
+                [InlineKeyboardButton(text='SG & JB Weather', callback_data='/weather')],
+                [InlineKeyboardButton(text=caption_dict['causeway1'], callback_data='/causeway1'),
+                 InlineKeyboardButton(text=caption_dict['causeway2'], callback_data='/causeway2')],
+                [InlineKeyboardButton(text=caption_dict['tuas1'], callback_data='/tuas1'),
+                 InlineKeyboardButton(text=caption_dict['tuas2'], callback_data='/tuas2')],
+                [InlineKeyboardButton(text='T&Cs', callback_data='/tnc')]
            ])
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)
     
