@@ -5,7 +5,7 @@ from django.db.models import Q
 
 msg_dict = {
     "junk" : "Don't send me junk!",
-    "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!",
+    "blacklist" : "Slow mode: I know you are eager to help, but my resources are limited. Sorry that I need to put you on hold. Talk to you later!",
     }
 
 def handle_command(bot, sender, user_id, chat_id, command, param, update_id, is_group):
