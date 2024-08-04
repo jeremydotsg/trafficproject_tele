@@ -132,7 +132,7 @@ def queue_detail(request, queue_id):
         form = QueueStatusForm(request.POST, error_class=DivErrorList)
         ip_address = get_client_ip(request)
         if form.is_valid():
-            if not QueueStatus.has_reached_update_limit(ip_address):
+            if not QueueStatus.has_reached_update_limit(ip_address) or os.getenv('ENVIRONMENT') in ['dev','devbot']:
                 new_status = form.save(commit=False)
                 new_status.queueIP = ip_address
                 new_status.queue = queue

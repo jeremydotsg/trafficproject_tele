@@ -5,7 +5,7 @@
 {% endblock page_title %}
 {% block page_content %}
 <p class="text-center mb-3">How jam is it?</p>
-<p class="text-center mb-3">Report queue conditions by clicking the queue below. Queue conditions based on report within last hour.</p>
+<p class="text-center mb-3">Report queue conditions by clicking the queue below. Queue conditions are aggregated based on reports within the past hour.</p>
 <div class="card px-1">
 	<nav id="direction-nav">
 		<div class="nav nav-pills px-1 py-1" id="nav-tab" role="tablist">
@@ -33,7 +33,7 @@
 					<div class="row" style="margin-bottom: 5px;">
 						{% for queue, status in queues.items %}
 						<div class="col-6 col-md-6 col-lg-3 mb-0 justify-content-center">
-							<div class="card h-100 {% if status.averageLength <= 1 %}bg-green text-white{% elif status.averageLength <= 2 %}bg-success text-white{% elif status.averageLength <= 3 %}bg-warning text-white{% elif status.averageLength <= 4 %}bg-danger text-white{% elif status.averageLength <= 5 %}bg-full text-white{% else %}bg-light text-black{% endif %} " style="height: 100px;">
+							<div class="card h-100 {% if status.averageLength <= 1 %}bg-green text-white{% elif status.averageLength <= 2 %}bg-success{% elif status.averageLength <= 3 %}bg-warning text-white{% elif status.averageLength <= 4 %}bg-danger text-white{% elif status.averageLength <= 5 %}bg-full text-white{% else %}bg-light text-black{% endif %} " style="height: 100px;">
 								<div class="card-body d-flex flex-column justify-content-center align-items-center queue-item">
 									{% if "gate" in queue|lower %}
 									<i class="bi bi-door-open-fill"></i>

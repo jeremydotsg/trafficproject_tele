@@ -82,7 +82,7 @@
   	background-color: #ADD8E6;
   }
   .bg-full {
-  	color: #FFF;
+  	color: #FFF !important;
   	background-color: #58151c;
   }
   .bg-green {
@@ -111,4 +111,23 @@
 	background-color: #007bff;
 	color: white;
 	transition: background-color 0.3s ease;
+}
+.option-card {
+    height: 150px;
+    width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.option-card:hover {
+    background-color: #f0f0f0 !important;
+}
+
+.option-card .card-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

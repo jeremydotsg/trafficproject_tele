@@ -8,14 +8,19 @@ from django.utils.safestring import mark_safe
 import logging
 
 import sys
+import os
+
+from dotenv import load_dotenv
+load_dotenv()
 
 logger = logging.getLogger('trafficdb')
 class QueueStatusForm(forms.ModelForm):
-    # captcha = ReCaptchaField(widget = ReCaptchaV3(action='queue_update'), error_messages={
-    #         'required': 'CAPTCHA Invalid.',
-    #         'invalid': 'CAPTCHA Invalid.',
-    #         'captcha_invalid': 'CAPTCHA Invalid.'
-    #     })
+    if os.getenv('ENVIRONMENT') in ['prod']:
+        captcha = ReCaptchaField(widget = ReCaptchaV3(action='queue_update'), error_messages={
+                'required': 'CAPTCHA Invalid.',
+                'invalid': 'CAPTCHA Invalid.',
+                'captcha_invalid': 'CAPTCHA Invalid.'
+            })
     class Meta:
         model = QueueStatus
         fields = ['queueLength']  # Assuming 'queueLength' is a field in QueueLength model
@@ -24,7 +29,7 @@ class QueueStatusForm(forms.ModelForm):
         self.fields['queueLength'].queryset = QueueLength.objects.filter(queueTypeDisplay=True)
     def clean(self):
         queue_ip = get_remote_ip(self)
-        if QueueStatus.has_reached_update_limit(queue_ip):
+        if os.getenv('ENVIRONMENT') in ['prod'] and QueueStatus.has_reached_update_limit(queue_ip):
             logger.info('QueueStatusForm :: IP > 5 times')
             raise ValidationError('Too many updates, try again later.')
 
