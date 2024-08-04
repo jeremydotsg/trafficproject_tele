@@ -83,7 +83,7 @@ class IndexView(View):
         one_hour_ago = current_time - timedelta(minutes=60)
 
         # Get the number of directions
-        for each_direction in Direction.objects.all():
+        for each_direction in Direction.objects.filter(directionDisplay=True).order_by('id').all():
             queue_type_pack = {}
             # Get the queue types
             for each_queue_type in QueueType.objects.filter(queueTypeDisplay=True).order_by('-queueTypeDisplayOrder').all():

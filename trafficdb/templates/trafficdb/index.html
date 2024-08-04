@@ -5,15 +5,15 @@
 {% endblock page_title %}
 {% block page_content %}
 <p class="text-center mb-3">How jam is it?</p>
-<p class="text-center mb-3">Share by clicking the coloured buttons!</p>
+<p class="text-center mb-3">Report queue conditions by clicking the queue below. Queue conditions based on report within last hour.</p>
 <div class="card px-1">
-	<nav>
+	<nav id="direction-nav">
 		<div class="nav nav-pills px-1 py-1" id="nav-tab" role="tablist">
 		{% for direction, queues in packed.items %}
 			{% if forloop.first %}
-			<button class="nav-link active" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="true">{{direction}}</button>
+			<a href="#nav-{{ forloop.counter }}" class="nav-link active btn-sm" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="true" data-hover="Report queue!">{{direction}}</a>
 			{% else %}
-			<button class="nav-link" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="false">{{direction}}</button>
+			<a href="#nav-{{ forloop.counter }}" class="nav-link btn-sm" id="nav-{{ forloop.counter }}-tab" data-bs-toggle="tab" data-bs-target="#nav-{{ forloop.counter }}" type="button" role="tab" aria-controls="nav-home" aria-selected="false" data-hover="Report queue!">{{direction}}</a>
 			{% endif %}
 		{% endfor %}
 		</div>
@@ -27,31 +27,26 @@
 			<div class="tab-pane fade" id="nav-{{ forloop.counter }}" role="tabpanel" aria-labelledby="nav-{{ forloop.counter }}-tab">
 			{% endif %}
 			{% for queue_type, queues in queue_types.items %}
-				{%if queues %}
-				<div class="card mb-1">
-					<h5 class="card-header bg-secondary text-white">{{ queue_type }}</h5>
-					<ul class="list-group list-group-flush">
+				{% if queues %}
+				<div class="card mb-0 border-0">
+					<h5 class="card-header bg-secondary text-white" style="margin-bottom: 5px; font-size: 0.8rem;">{{ queue_type }}</h5>
+					<div class="row" style="margin-bottom: 5px;">
 						{% for queue, status in queues.items %}
-						<li class="list-group-item d-flex justify-content-between align-items-center">
-							<span class="fs-6 fw-bold">{{ queue }}</span>
-							<a href="{% url 'trafficdb:queue_detail' queue_id=queue.id %}" class="stretched-link">
-								{% if status.averageLength <= 1 %}
-								<button type="button" class="btn btn-success btn-sm float-end">No Queue</button>
-								{% elif status.averageLength <= 2 %}
-								<button type="button" class="btn btn-info btn-sm float-end">Short Queue</button>
-								{% elif status.averageLength <= 3 %}
-								<button type="button" class="btn btn-warning btn-sm float-end">Medium Queue</button>
-								{% elif status.averageLength <= 4 %}
-								<button type="button" class="btn btn-danger btn-sm float-end">Long Queue</button>
-								{% elif status.averageLength <= 5 %}
-								<button type="button" class="btn btn-full btn-sm float-end">Full Queue</button>
-								{% else %}
-								<button type="button" class="btn btn-secondary btn-sm float-end">No data</button>
-								{% endif %}
-							</a>
-						</li>
+						<div class="col-6 col-md-6 col-lg-3 mb-0 justify-content-center">
+							<div class="card h-100 {% if status.averageLength <= 1 %}bg-green text-white{% elif status.averageLength <= 2 %}bg-success text-white{% elif status.averageLength <= 3 %}bg-warning text-white{% elif status.averageLength <= 4 %}bg-danger text-white{% elif status.averageLength <= 5 %}bg-full text-white{% else %}bg-light text-black{% endif %} " style="height: 100px;">
+								<div class="card-body d-flex flex-column justify-content-center align-items-center queue-item">
+									{% if "gate" in queue|lower %}
+									<i class="bi bi-door-open-fill"></i>
+									{% else %}
+									<i class="bi bi-bus-front-fill"></i>
+									{% endif %}
+									<span class="fs-6 fw-bold text-center queue-btn">{{ queue }}</span>
+									<a href="{% url 'trafficdb:queue_detail' queue_id=queue.id %}" class="stretched-link"></a>
+								</div>
+							</div>
+						</div>
 						{% endfor %}
-					</ul>
+					</div>
 				</div>
 				{% endif %}
 			{% endfor %}
@@ -59,4 +54,41 @@
 		{% endfor %}
 	</div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	const navButtons = document.querySelectorAll('#direction-nav .nav-link');
+	const hash = window.location.hash;
+
+	if (hash) {
+		const activeTab = document.querySelector(`.nav-link[href="${hash}"]`);
+		if (activeTab) {
+			navButtons.forEach(btn => btn.classList.remove('active'));
+			activeTab.classList.add('active');
+			const tabPane = document.querySelector(hash);
+			if (tabPane) {
+				const tabPanes = document.querySelectorAll('.tab-pane');
+				tabPanes.forEach(pane => pane.classList.remove('show', 'active'));
+				tabPane.classList.add('show', 'active');
+			}
+		}
+	}
+
+	navButtons.forEach(button => {
+		button.addEventListener('click', function() {
+			navButtons.forEach(btn => btn.classList.remove('active'));
+			this.classList.add('active');
+			window.location.hash = this.getAttribute('href');
+		});
+	});
+
+	const queueItems = document.querySelectorAll('.queue-item');
+	queueItems.forEach(item => {
+		item.addEventListener('hover', function() {
+			queueItems.forEach(q => q.classList.remove('active'));
+			this.classList.add('active');
+		});
+	});
+});
+</script>
 {% endblock page_content %}

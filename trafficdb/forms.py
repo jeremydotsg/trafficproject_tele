@@ -11,11 +11,11 @@ import sys
 
 logger = logging.getLogger('trafficdb')
 class QueueStatusForm(forms.ModelForm):
-    captcha = ReCaptchaField(widget = ReCaptchaV3(action='queue_update'), error_messages={
-            'required': 'CAPTCHA Invalid.',
-            'invalid': 'CAPTCHA Invalid.',
-            'captcha_invalid': 'CAPTCHA Invalid.'
-        })
+    # captcha = ReCaptchaField(widget = ReCaptchaV3(action='queue_update'), error_messages={
+    #         'required': 'CAPTCHA Invalid.',
+    #         'invalid': 'CAPTCHA Invalid.',
+    #         'captcha_invalid': 'CAPTCHA Invalid.'
+    #     })
     class Meta:
         model = QueueStatus
         fields = ['queueLength']  # Assuming 'queueLength' is a field in QueueLength model
