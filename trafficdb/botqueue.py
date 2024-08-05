@@ -46,11 +46,15 @@ def handle_get_dir(bot, chat_id):
 def handle_get_dir_queue(bot, chat_id, param):
     params = validate_params(param, 1)
     if params:
-        queues = Queue.objects.filter(direction_id=params[0])
+        queues = Queue.objects.filter(direction_id=params[0]).order_by('-queueType__queueTypeDisplayOrder')
         buttons = []
         if queues:
             for queue in queues:
-                buttons.append([InlineKeyboardButton(text=queue.queueName, callback_data='/queuec '+ str(queue.id))])
+                if "gate" in queue.queueName.lower():
+                    emoji = "🚪"
+                else:
+                    emoji = "🚌"
+                buttons.append([InlineKeyboardButton(text=f"{emoji} {queue.queueName}", callback_data='/queuec ' + str(queue.id))])
             
             keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
             bot.sendMessage(chat_id, "Which queue do you wish to update?", reply_markup=keyboard)
@@ -71,7 +75,7 @@ def handle_get_queue(bot, chat_id, param):
                 for queueLength in queueLengths:
                     buttons.append([InlineKeyboardButton(text=queueLength.queueLength, callback_data='/queued '+ str(params[0]) + ' ' + str(queueLength.id))])
                 keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-                bot.sendMessage(chat_id, "How packed is the {} queue?".format(queues[0].queueName), reply_markup=keyboard)
+                bot.sendMessage(chat_id, "🚥 How packed is the {} queue?".format(queues[0].queueName), reply_markup=keyboard)
             else:
                 return "No queue configured."
         else:
