@@ -54,7 +54,19 @@
 		{% endfor %}
 	</div>
 </div>
-
+<div class="container">
+	<div class="row">
+		<div class="col-sm align-content-center">
+			<span class="badge badge-pill bg-white text-black">Status</span>
+			<span class="badge badge-pill bg-light text-black">No data</span>
+			<span class="badge badge-pill bg-green">No Q</span>
+			<span class="badge badge-pill bg-success">&lt; 15m</span>
+			<span class="badge badge-pill bg-warning">&lt; 30m</span>
+			<span class="badge badge-pill bg-danger">&lt; 1h</span>
+			<span class="badge badge-pill bg-full">&gt; 1h</span>
+		</div>
+	</div>
+</div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 	const navButtons = document.querySelectorAll('#direction-nav .nav-link');
