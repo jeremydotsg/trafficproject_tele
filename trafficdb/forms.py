@@ -17,8 +17,8 @@ logger = logging.getLogger('trafficdb')
 class QueueStatusForm(forms.ModelForm):
     if os.getenv('ENVIRONMENT') in ['prod']:
         captcha = ReCaptchaField(widget = ReCaptchaV3(action='queue_update'), error_messages={
-                'required': 'CAPTCHA Invalid.',
-                'invalid': 'CAPTCHA Invalid.',
+                'required': 'CAPTCHA required.',
+                'invalid': 'Invalid field.',
                 'captcha_invalid': 'CAPTCHA Invalid.'
             })
     class Meta:

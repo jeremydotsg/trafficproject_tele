@@ -36,7 +36,7 @@
                             {% endfor %}
                         </div>
                         <input type="hidden" name="queueLength" id="queueLengthInput">
-                        <input type="hidden" name="captcha" id="captcha">
+                        {{ form.captcha }}
                     </div>
                     <!-- Error message block -->
                     {% if form.errors %}
@@ -51,6 +51,7 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+                    <button type="submit" name="subbtn" class="d-none">Submit</button>
                 </form>
             </p>
         </div>
@@ -66,8 +67,20 @@ function selectOption(value, event) {
         card.classList.remove('bg-primary', 'text-white');
     });
     event.currentTarget.classList.add('bg-primary', 'text-white');
+    
+    const form = document.getElementById('queueForm');
+    const captchaField = document.querySelector('[name="captcha_0"]');
+    if (captchaField) {
+        const hiddenCaptchaField = document.createElement('input');
+        hiddenCaptchaField.type = 'hidden';
+        hiddenCaptchaField.name = captchaField.name;
+        hiddenCaptchaField.value = captchaField.value;
+        form.appendChild(hiddenCaptchaField);
+    }
+    
     // Submit the form
-    document.getElementById('queueForm').submit();
+    form.subbtn.click();
 }
 </script>
+
 {% endblock page_content %}
