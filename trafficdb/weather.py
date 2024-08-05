@@ -86,6 +86,7 @@ def convert_to_eng(my_weather_json):
             "Ribut petir di satu dua tempat" : "Isolated thunderstorms",
             "Ribut petir di satu dua tempat di kawasan pantai" : "Isolated thunderstorms over coastal areas",
             "Ribut petir di satu dua tempat di kawasan pedalaman" : "Isolated thunderstorms over inland areas",
+            "Ribut petir di kebanyakan tempat" : "Thunderstorms in most places",
             "Pagi" : "Morning",
             "Malam" : "Night",
             "Petang" : "Afternoon",

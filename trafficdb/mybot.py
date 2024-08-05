@@ -481,8 +481,8 @@ def extract_sender(message):
 
 def send_start_reply(bot, chat_id, msg_id, is_group):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="*NEW* ⏳ Report Bus & Checkpoint Queue", callback_data='/queuestart')],
-                [InlineKeyboardButton(text='⏳ Check Bus & Checkpoint Queue (Web)', callback_data='/dashboard')],
+                [InlineKeyboardButton(text="🚥 *NEW* Report Bus & Checkpoint Queue", callback_data='/queuestart')],
+                [InlineKeyboardButton(text='🚥 Check Bus & Checkpoint Queue (Web)', callback_data='/dashboard')],
                 [InlineKeyboardButton(text='⛅ SG & JB Weather', callback_data='/weather')],
                 [InlineKeyboardButton(text=caption_dict['causeway1'], callback_data='/causeway1'),
                  InlineKeyboardButton(text=caption_dict['causeway2'], callback_data='/causeway2')],
