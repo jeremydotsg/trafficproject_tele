@@ -502,7 +502,7 @@ def extract_sender(message):
     return sender
 
 def send_start_reply(bot, chat_id, msg_id, is_group):
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    keyboard_buttons = [
                 [InlineKeyboardButton(text="🚥 *NEW* Report Bus & Checkpoint Queue", callback_data='/queuestart')],
                 [InlineKeyboardButton(text='🚥 Check Bus & Checkpoint Queue (Web)', callback_data='/dashboard')],
                 [InlineKeyboardButton(text='⛅ SG & JB Weather', callback_data='/weather')],
@@ -510,8 +510,12 @@ def send_start_reply(bot, chat_id, msg_id, is_group):
                  InlineKeyboardButton(text=caption_dict['causeway2'], callback_data='/causeway2')],
                 [InlineKeyboardButton(text=caption_dict['tuas1'], callback_data='/tuas1'),
                  InlineKeyboardButton(text=caption_dict['tuas2'], callback_data='/tuas2')],
-                [InlineKeyboardButton(text='T&Cs', callback_data='/tnc')]
-           ])
+                [InlineKeyboardButton(text='T&Cs', callback_data='/tnc')],
+           ]
+    if check_admin(chat_id):
+        keyboard_buttons += [[InlineKeyboardButton(text='Show All', callback_data='/showall'),InlineKeyboardButton(text='Reload Images', callback_data='/reload'), InlineKeyboardButton(text='Trigger job', callback_data='/job')]]
+    
+    keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)
     
     
