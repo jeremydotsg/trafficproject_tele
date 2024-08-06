@@ -106,6 +106,7 @@ class IndexView(View):
         data = {
             'packed': direction_pack
         }
+        refresh_lta_image_web()
         logger.info('Dashboard :: End')
         return render(request, 'trafficdb/index.html', data)
 

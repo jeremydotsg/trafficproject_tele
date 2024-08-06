@@ -197,6 +197,7 @@ class WhitelistTgUser(models.Model):
     start_at = models.DateTimeField(auto_now_add=True)
     end_at = models.DateTimeField(blank=True, null=True) 
     remarks = models.CharField(max_length=255, blank=True, null=True)
+    is_admin = models.BooleanField(default=False)
 
     def __str__(self):
         return f"W ID: {self.from_id}"

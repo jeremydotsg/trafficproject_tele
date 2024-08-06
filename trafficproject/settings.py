@@ -20,12 +20,16 @@ load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-# STATICFILES_DIRS = [
-#    os.path.join(BASE_DIR, 'static'),
-#]
-
-
+if os.getenv('ENVIRONMENT') in ['prod']:
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    STATIC_URL = os.getenv('STATIC')
+    STATIC_ROOT = os.getenv('STATIC_ROOT')
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    STATICFILES_DIRS = [os.path.join(BASE_DIR,'')]
+    STATIC_URL = os.getenv('STATIC')
+    STATIC_ROOT = os.path.join(BASE_DIR, '/')
+    MEDIA_ROOT = os.path.join(BASE_DIR, '')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -221,15 +225,12 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = os.getenv('STATIC')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_ROOT = os.getenv('STATIC_ROOT')
+
 RECAPTCHA_REQUIRED_SCORE = os.getenv('RECAPTCHA_REQUIRED_SCORE')

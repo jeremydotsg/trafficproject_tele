@@ -159,7 +159,7 @@ class BlockedTgUserAdmin(admin.ModelAdmin):
     
 @admin.register(WhitelistTgUser)
 class WhitelistTgUserAdmin(admin.ModelAdmin):
-    list_display = ('from_id', 'start_at', 'end_at' , 'created_at')
+    list_display = ('from_id', 'start_at', 'end_at', 'created_at', 'is_admin')
     
 @admin.register(WhitelistGroup)
 class WhitelistGroupAdmin(admin.ModelAdmin):

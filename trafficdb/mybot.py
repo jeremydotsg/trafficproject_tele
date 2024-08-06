@@ -40,7 +40,7 @@ msg_dict = {
     "blacklist" : "Slow mode: Hey, you have found a hidden feature!. Others need my help too, so I need to put you on hold. Talk to you later!",
     "wait" : "Wait a moment...",
     "lta_tnc" : "\nNote: This bot uses the LTA's Traffic Images dataset accessed at the time of request and made available under the terms of the <a href=\"https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html\">Singapore Open Data Licence version 1.0</a>.",
-    "streamnote" : "Note: The bot owners are not associated with the channels in the links.\nThe links are provided for informational purposes only. We do not guarantee accuracy, completeness, or suitability and do not accept any liabilities over the use of the information.\n\nBy proceeding, you accept the risks and do not hold us liable for anything arises from the use of the information.",
+    "job" : "Triggered job manually.",
     "beta"  : "Beta mode: Currently in limited beta mode. Watch out when this bot is available.",
     "tnc" : "<b>Terms & Conditions</b>\nBy interacting with this Bot, you agree to the <a href=\"https://mygowhere.pythonanywhere.com/trafficdb/disclaimer\">disclaimer published here</a>.\n"
 }
@@ -214,13 +214,17 @@ def process_telebot_request(request, bot):
                 sendReplyPhoto(bot, command,chat_id,msg_id, is_group)
                 return update_return_response(req_obj,'ok')            
             # Whitelist users (and groups) only commands
-            elif command in ['reload','showall']:
-                if check_whitelist(user_id):
+            elif command in ['reload','showall','job']:
+                if check_admin(user_id):
                     if command in ['showall']:
                         sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
                         return update_return_response(req_obj,'ok')  
                     elif command == 'reload':
                         reloadPhotos(bot, chat_id, msg_id, is_group)
+                        return update_return_response(req_obj,'ok') 
+                    elif command == 'job':
+                        bot.sendMessage(chat_id, msg_dict['job']) 
+                        process_routine_job(req_obj,bot)
                         return update_return_response(req_obj,'ok') 
                 else:
                     if not is_group:
@@ -399,6 +403,24 @@ def check_whitelist(from_id):
     
     return False
 
+def check_admin(from_id):
+
+    #Time
+    now = timezone.now()
+
+    #Whitelist
+    whitelist_records = WhitelistTgUser.objects.filter(
+        Q(from_id=from_id),
+        Q(start_at__lt=now),
+        Q(is_admin=True),
+        Q(end_at__isnull=True) | Q(end_at__gt=now)
+    )
+    if whitelist_records.exists():
+        logger.info("Check Admin :: User is Admin :: Userid " + str(from_id))
+        return True
+    
+    return False
+
 def check_whitelist_group(group_id):
 
     #Time
@@ -503,4 +525,10 @@ def process_routine_job(request, bot):
         sendReplyPhotoGroup(bot, chat_id, '', True)
         
     return update_return_response(None,'ok')
+
+def refresh_lta_image_web():
+    for key, value in photo_dict.items():
+        input_media = None
+        photo_url = getSavePhoto(value)
+        
     
