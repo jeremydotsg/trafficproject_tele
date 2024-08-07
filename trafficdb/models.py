@@ -130,7 +130,7 @@ class BusArrival(models.Model):
             # Calculate the difference
             diff = estimated_arrival - self.createdTime.astimezone(pytz.timezone('Asia/Singapore'))
             # If the difference is negative, return 0
-            return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
+            return 'Arr' if diff.total_seconds() < 60 else int(diff.total_seconds()) // 60
         return None
     def arrival_next_bus2(self):
         estimated_arrival = self.next_bus_2.get('EstimatedArrival')
@@ -140,7 +140,7 @@ class BusArrival(models.Model):
             # Calculate the difference
             diff = estimated_arrival - self.createdTime.astimezone(pytz.timezone('Asia/Singapore'))
             # If the difference is negative, return 0
-            return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
+            return 'Arr' if diff.total_seconds() < 60 else int(diff.total_seconds()) // 60
         return None
     def arrival_next_bus3(self):
         estimated_arrival = self.next_bus_3.get('EstimatedArrival')
@@ -150,7 +150,7 @@ class BusArrival(models.Model):
             # Calculate the difference
             diff = estimated_arrival - self.createdTime.astimezone(pytz.timezone('Asia/Singapore'))
             # If the difference is negative, return 0
-            return 'Arr' if diff.total_seconds() < 1 else int(diff.total_seconds()) // 60
+            return 'Arr' if diff.total_seconds() < 60 else int(diff.total_seconds()) // 60
         return None
 
 class TelegramRequest(models.Model):

@@ -214,7 +214,7 @@ def process_telebot_request(request, bot):
                 sendReplyPhoto(bot, command,chat_id,msg_id, is_group)
                 return update_return_response(req_obj,'ok')            
             # Whitelist users (and groups) only commands
-            elif command in ['reload','showall','job']:
+            elif command in ['reload','showall','grpcctv','grpweather']:
                 if check_admin(user_id):
                     if command in ['showall']:
                         sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
@@ -222,9 +222,13 @@ def process_telebot_request(request, bot):
                     elif command == 'reload':
                         reloadPhotos(bot, chat_id, msg_id, is_group)
                         return update_return_response(req_obj,'ok') 
-                    elif command == 'job':
+                    elif command == 'grpcctv':
                         bot.sendMessage(chat_id, msg_dict['job']) 
                         process_routine_job(req_obj,bot)
+                        return update_return_response(req_obj,'ok')
+                    elif command == 'grpweather':
+                        bot.sendMessage(chat_id, msg_dict['job']) 
+                        process_weather(req_obj,bot)
                         return update_return_response(req_obj,'ok') 
                 else:
                     if not is_group:
@@ -503,7 +507,7 @@ def extract_sender(message):
 
 def send_start_reply(bot, chat_id, msg_id, is_group):
     keyboard_buttons = [
-                [InlineKeyboardButton(text="🚥 *NEW* Report Bus & Checkpoint Queue", callback_data='/queuestart')],
+                [InlineKeyboardButton(text="🚥 Report Bus & Checkpoint Queue", callback_data='/queuestart')],
                 [InlineKeyboardButton(text='🚥 Check Bus & Checkpoint Queue (Web)', callback_data='/dashboard')],
                 [InlineKeyboardButton(text='⛅ SG & JB Weather', callback_data='/weather')],
                 [InlineKeyboardButton(text=caption_dict['causeway1'], callback_data='/causeway1'),
@@ -513,7 +517,7 @@ def send_start_reply(bot, chat_id, msg_id, is_group):
                 [InlineKeyboardButton(text='T&Cs', callback_data='/tnc')],
            ]
     if check_admin(chat_id):
-        keyboard_buttons += [[InlineKeyboardButton(text='Show All', callback_data='/showall'),InlineKeyboardButton(text='Reload Images', callback_data='/reload'), InlineKeyboardButton(text='Trigger job', callback_data='/job')]]
+        keyboard_buttons += [[InlineKeyboardButton(text='Admin Functions', callback_data='/start')],[InlineKeyboardButton(text='Show All', callback_data='/showall'),InlineKeyboardButton(text='Reload Images', callback_data='/reload')],[InlineKeyboardButton(text='Send CCTV images to group(s).', callback_data='/grpcctv'),InlineKeyboardButton(text='Send weather to group(s).', callback_data='/grpweather')]]
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)
@@ -527,6 +531,17 @@ def process_routine_job(request, bot):
     chat_list = chat_list_str.split(',')
     for chat_id in chat_list:
         sendReplyPhotoGroup(bot, chat_id, '', True)
+        
+    return update_return_response(None,'ok')
+
+def process_weather(request, bot):
+    chat_list_str = os.getenv('CHAT_ID', '')
+    if not check_whitelist("9999"):
+        return update_return_response(None,'batchoff')
+    # Split the string into a list by commas
+    chat_list = chat_list_str.split(',')
+    for chat_id in chat_list:
+        bot.sendMessage(chat_id, weather.get_weather(), parse_mode="HTML")
         
     return update_return_response(None,'ok')
 
