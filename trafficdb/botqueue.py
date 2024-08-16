@@ -106,8 +106,15 @@ def handle_get_update_queue(bot, chat_id, param):
     return "Completed request."
 
 def validate_params(params, num_params):
+    print("Test for pattern :: " + params)
     test_pattern = r"^\d+(?: \d+)*$"
     matches = re.match(test_pattern, params)
+    print(matches)
+    non_num_pattern = r"/[^\d\s]*$/gm"
+    matches_non_num = re.match(non_num_pattern,params)
+    if matches_non_num:
+        print("Matches non num")
+        return None
     if matches:
         params_list = params.split(" ")
         print(params_list)

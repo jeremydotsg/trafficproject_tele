@@ -121,11 +121,13 @@ def process_telebot_request(request, bot):
                 if check_whitelist(user_id):
                     pattern = r"/(\w+)@(\w+)"
                     match = re.match(pattern, chat_text)
+                    print(match)
                     if match:
                         cmd, bm = match.groups()
                         if bm == bot_name:
                             is_process = True
                             command = cmd
+                            
                             logger.info("Webhook :: Group command " + str(cmd))
                         else:
                             # No Response
@@ -159,6 +161,9 @@ def process_telebot_request(request, bot):
             pattern = r"\/(\w+)\s?([\w\s]*)"
             # print("Try parsing command: " + chat_text)
             match = re.match(pattern, chat_text)
+            # non_num_pattern = r"\/(\w+)\s?[^\d\s]*$/gm"
+            # matches_non_num = re.match(non_num_pattern,params)
+            # print(matches_non_num)
             if match:
                 command, param = match.groups()
                 is_process = True
