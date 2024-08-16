@@ -18,7 +18,7 @@ import os
 
 load_dotenv()
 
-STATIC_URL = /static/
+STATIC_URL = "/static/"
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 if os.getenv('ENVIRONMENT') in ['prod']:
     BASE_DIR = Path(__file__).resolve().parent.parent
