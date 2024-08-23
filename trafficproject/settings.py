@@ -198,7 +198,6 @@ elif os.getenv('ENVIRONMENT') == 'prod_koyeb':
             'USER': os.getenv('PROD_DB_USER'),
             'PASSWORD': os.getenv('PROD_DB_PASSWORD'),
             'HOST': os.getenv('PROD_DB_HOST'),
-            'PORT': os.getenv('PROD_DB_PORT'),
             'OPTIONS': {'sslmode': 'require'},
         }
     }
