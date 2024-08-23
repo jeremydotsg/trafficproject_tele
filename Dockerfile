@@ -19,7 +19,9 @@ ENV PORT=8000
 WORKDIR /app
 
 COPY --from=builder /app/venv venv
-COPY * trafficproject
+COPY trafficdb trafficdb
+COPY trafficproject trafficproject
+COPY manage.py manage.py
 
 WORKDIR /app
 
