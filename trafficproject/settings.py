@@ -110,12 +110,12 @@ LOG_INFO_FILENAME = os.path.join(LOG_BASE_PATH, 'info.log')
 LOG_APP_FILENAME = os.path.join(LOG_BASE_PATH, 'app.log')
 LOG_MIDDLEWARE_FILENAME = os.path.join(LOG_BASE_PATH, 'middleware.log')
 
-if not os.path.exists(LOG_INFO_FILENAME):
-    os.makedirs(LOG_INFO_FILENAME)
-if not os.path.exists(LOG_APP_FILENAME):
-    os.makedirs(LOG_APP_FILENAME)
-if not os.path.exists(LOG_MIDDLEWARE_FILENAME):
-    os.makedirs(LOG_MIDDLEWARE_FILENAME)
+log_directories = [os.path.dirname(LOG_INFO_FILENAME), os.path.dirname(LOG_APP_FILENAME), os.path.dirname(LOG_MIDDLEWARE_FILENAME)]
+
+for directory in log_directories:
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 
 LOGGING = {
     'version': 1,
@@ -162,12 +162,12 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'trafficdb': {  # Replace 'myapp' with your application's name
+        'trafficdb': {
             'handlers': ['trafficdb_file'],
             'level': 'INFO',
             'propagate': False,
         },
-        'trafficdb_middleware': {  # Replace 'myapp' with your application's name
+        'trafficdb_middleware': {
             'handlers': ['trafficdb_middleware_file'],
             'level': 'INFO',
             'propagate': False,
