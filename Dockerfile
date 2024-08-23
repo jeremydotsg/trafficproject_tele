@@ -19,8 +19,7 @@ ENV PORT=8000
 WORKDIR /app
 
 COPY --from=builder /app/venv venv
-COPY trafficdb trafficdb
-COPY trafficproject trafficproject
+COPY * trafficproject
 
 WORKDIR /app
 
