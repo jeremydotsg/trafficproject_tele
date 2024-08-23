@@ -110,6 +110,13 @@ LOG_INFO_FILENAME = os.path.join(LOG_BASE_PATH, 'info.log')
 LOG_APP_FILENAME = os.path.join(LOG_BASE_PATH, 'app.log')
 LOG_MIDDLEWARE_FILENAME = os.path.join(LOG_BASE_PATH, 'middleware.log')
 
+if not os.path.exists(LOG_INFO_FILENAME):
+    os.makedirs(LOG_INFO_FILENAME)
+if not os.path.exists(LOG_APP_FILENAME):
+    os.makedirs(LOG_APP_FILENAME)
+if not os.path.exists(LOG_MIDDLEWARE_FILENAME):
+    os.makedirs(LOG_MIDDLEWARE_FILENAME)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
