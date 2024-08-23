@@ -131,8 +131,7 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_INFO_FILENAME,
+            'class': 'logging.StreamHandler',
             'formatter': 'asia_singapore',
             'when': 'D',
             'interval': 1,
@@ -140,8 +139,7 @@ LOGGING = {
         },
         'trafficdb_file': {
             'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_APP_FILENAME,
+            'class': 'logging.StreamHandler',
             'formatter': 'asia_singapore',
             'when': 'D',
             'interval': 1,
@@ -149,8 +147,7 @@ LOGGING = {
         },
         'trafficdb_middleware_file': {
             'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_MIDDLEWARE_FILENAME,
+            'class': 'logging.StreamHandler',
             'formatter': 'asia_singapore',
             'when': 'D',
             'interval': 1,
