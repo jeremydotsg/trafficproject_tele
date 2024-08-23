@@ -24,4 +24,4 @@ COPY trafficproject trafficproject
 
 EXPOSE ${PORT}
 
-CMD gunicorn --bind :${PORT} --workers 2 example_django.wsgi
+CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
