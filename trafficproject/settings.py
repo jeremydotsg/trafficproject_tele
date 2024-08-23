@@ -115,6 +115,7 @@ log_directories = [os.path.dirname(LOG_INFO_FILENAME), os.path.dirname(LOG_APP_F
 for directory in log_directories:
     if not os.path.exists(directory):
         os.makedirs(directory)
+        print(directory)
 
 
 LOGGING = {
