@@ -22,6 +22,8 @@ COPY --from=builder /app/venv venv
 COPY trafficdb trafficdb
 COPY trafficproject trafficproject
 
+WORKDIR /app
+
 EXPOSE ${PORT}
 
 CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
