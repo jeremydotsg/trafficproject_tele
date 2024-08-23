@@ -118,63 +118,63 @@ for directory in log_directories:
         print(directory)
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'asia_singapore': {
-            '()': AsiaSingaporeFormatter,
-            'format': '%(asctime)s %(levelname)s %(message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_INFO_FILENAME,
-            'formatter': 'asia_singapore',
-            'when': 'D',
-            'interval': 1,
-            'backupCount': 7,
-        },
-        'trafficdb_file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_APP_FILENAME,
-            'formatter': 'asia_singapore',
-            'when': 'D',
-            'interval': 1,
-            'backupCount': 7,
-        },
-        'trafficdb_middleware_file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_MIDDLEWARE_FILENAME,
-            'formatter': 'asia_singapore',
-            'when': 'D',
-            'interval': 1,
-            'backupCount': 7,
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'trafficdb': {
-            'handlers': ['trafficdb_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'trafficdb_middleware': {
-            'handlers': ['trafficdb_middleware_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'asia_singapore': {
+#             '()': AsiaSingaporeFormatter,
+#             'format': '%(asctime)s %(levelname)s %(message)s',
+#             'datefmt': '%Y-%m-%d %H:%M:%S',
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'INFO',
+#             'class': 'logging.handlers.TimedRotatingFileHandler',
+#             'filename': LOG_INFO_FILENAME,
+#             'formatter': 'asia_singapore',
+#             'when': 'D',
+#             'interval': 1,
+#             'backupCount': 7,
+#         },
+#         'trafficdb_file': {
+#             'level': 'INFO',
+#             'class': 'logging.handlers.TimedRotatingFileHandler',
+#             'filename': LOG_APP_FILENAME,
+#             'formatter': 'asia_singapore',
+#             'when': 'D',
+#             'interval': 1,
+#             'backupCount': 7,
+#         },
+#         'trafficdb_middleware_file': {
+#             'level': 'INFO',
+#             'class': 'logging.handlers.TimedRotatingFileHandler',
+#             'filename': LOG_MIDDLEWARE_FILENAME,
+#             'formatter': 'asia_singapore',
+#             'when': 'D',
+#             'interval': 1,
+#             'backupCount': 7,
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'INFO',
+#             'propagate': True,
+#         },
+#         'trafficdb': {
+#             'handlers': ['trafficdb_file'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#         'trafficdb_middleware': {
+#             'handlers': ['trafficdb_middleware_file'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#     },
+# }
 
 
 
