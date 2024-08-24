@@ -1,0 +1,29 @@
+version: '1.0'
+
+# Defining the compose version
+services:
+
+ nginx:
+  build: ./nginx
+  ports:
+    - 8687:80
+  volumes:
+    - static_volume:/app/staticfiles
+    - media_volume:/app/mediafiles
+  depends_on:
+    - myproject
+  restart: "always"
+ 
+ myproject:
+  build: ./trafficproject
+  command: sh -c "gunicorn trafficproject.wsgi:application --bind 0.0.0.0:8000"
+  volumes:
+    - static_volume:/app/staticfiles
+    - media_volume:/app/mediafiles
+  expose: 
+   - 8000
+  restart: "always"
+
+volumes:
+ static_volume:
+ media_volume:
