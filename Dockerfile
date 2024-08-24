@@ -22,6 +22,7 @@ COPY --from=builder /app/venv venv
 COPY trafficdb trafficdb
 COPY trafficproject trafficproject
 COPY manage.py manage.py
+COPY Procfile Procfile
 
 WORKDIR /app
 
