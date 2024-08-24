@@ -36,6 +36,9 @@ else:
 #Environment
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CRSF_CORS_HOST', '').split(',')
+CSRF_ALLOWED_ORIGINS = os.getenv('CRSF_CORS_HOST', '').split(',')
+CORS_ORIGINS_WHITELIST = os.getenv('CRSF_CORS_HOST', '').split(',')
 
 #Keys
 SECRET_KEY = os.getenv('SECRET_KEY', '')
