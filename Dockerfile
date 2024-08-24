@@ -28,5 +28,5 @@ WORKDIR /app
 
 EXPOSE ${PORT}
 
-CMD python manage.py runserver
+CMD python manage.py runserver 0.0.0.0:${PORT}
 #CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
