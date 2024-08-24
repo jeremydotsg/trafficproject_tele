@@ -49,7 +49,7 @@ if os.getenv('ENVIRONMENT') in ['dev']:
     from unittest.mock import MagicMock
     bot=MagicMock()
     is_dev=True
-elif os.getenv('ENVIRONMENT') in ['devbot', 'prod']:
+elif os.getenv('ENVIRONMENT') in ['devbot', 'prod','prod_koyeb']:
     
     if os.getenv('ENVIRONMENT') == 'devbot':
         randstring = '1234'
