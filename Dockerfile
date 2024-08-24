@@ -30,5 +30,4 @@ EXPOSE ${PORT}
 
 CMD python manage.py migrate
 CMD python manage.py collectstatic --noinput
-CMD python manage.py runserver 0.0.0.0:${PORT}
 #CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
