@@ -36,9 +36,9 @@ else:
 #Environment
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-CSRF_TRUSTED_ORIGINS = os.getenv('CRSF_CORS_HOST', '')
-CSRF_ALLOWED_ORIGINS = os.getenv('CRSF_CORS_HOST', '')
-CORS_ORIGINS_WHITELIST = os.getenv('CRSF_CORS_HOST', '')
+CSRF_TRUSTED_ORIGINS = ['https://jam-app.koyeb.app']
+CSRF_ALLOWED_ORIGINS = ['https://jam-app.koyeb.app']
+CORS_ORIGINS_WHITELIST = ['https://jam-app.koyeb.app']
 
 #Keys
 SECRET_KEY = os.getenv('SECRET_KEY', '')
