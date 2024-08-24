@@ -9,16 +9,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Fetching the latest nginx image
-#FROM nginx
-
-# Removing default nginx.conf
-#RUN rm /etc/nginx/conf.d/default.conf
-
-# Copying new conf.d into conf.d nginx image
-#COPY nginx.conf /etc/nginx/conf.d
-
-
 # Stage 2
 FROM python:3-alpine AS runner
 
@@ -40,4 +30,4 @@ EXPOSE ${PORT}
 
 CMD python manage.py migrate
 CMD python manage.py collectstatic --noinput
-CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
+CMD gunicorn --bind :${PORT} --workers 2 --env DJANGO_SETTINGS_MODULE=trafficproject.settings trafficproject.wsgi
