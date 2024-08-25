@@ -45,6 +45,7 @@ randstring = uuid.uuid4().hex
 is_dev = False
 bot = None
 bot_name = os.getenv('BOT_NAME', '')
+print(os.getenv('ENVIRONMENT'))
 if os.getenv('ENVIRONMENT') in ['dev']:
     from unittest.mock import MagicMock
     bot=MagicMock()

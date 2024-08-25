@@ -12,6 +12,7 @@ import re
 from aiohttp.web_response import json_response
 from . import weather
 from . import botqueue
+from . import extract_text
 
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -219,7 +220,7 @@ def process_telebot_request(request, bot):
                 sendReplyPhoto(bot, command,chat_id,msg_id, is_group)
                 return update_return_response(req_obj,'ok')            
             # Whitelist users (and groups) only commands
-            elif command in ['reload','showall','grpcctv','grpweather']:
+            elif command in ['reload','showall','grpcctv','grpweather', 'getrate']:
                 if check_admin(user_id):
                     if command in ['showall']:
                         sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
@@ -234,6 +235,9 @@ def process_telebot_request(request, bot):
                     elif command == 'grpweather':
                         bot.sendMessage(chat_id, msg_dict['job']) 
                         process_weather(req_obj,bot)
+                        return update_return_response(req_obj,'ok') 
+                    elif command == 'getrate':
+                        bot.sendMessage(chat_id, extract_text.get_rate())
                         return update_return_response(req_obj,'ok') 
                 else:
                     if not is_group:
@@ -522,7 +526,7 @@ def send_start_reply(bot, chat_id, msg_id, is_group):
                 [InlineKeyboardButton(text='T&Cs', callback_data='/tnc')],
            ]
     if check_admin(chat_id):
-        keyboard_buttons += [[InlineKeyboardButton(text='Admin Functions', callback_data='/start')],[InlineKeyboardButton(text='Show All', callback_data='/showall'),InlineKeyboardButton(text='Reload Images', callback_data='/reload')],[InlineKeyboardButton(text='Send CCTV images to group(s).', callback_data='/grpcctv'),InlineKeyboardButton(text='Send weather to group(s).', callback_data='/grpweather')]]
+        keyboard_buttons += [[InlineKeyboardButton(text='Admin Functions', callback_data='/start')],[InlineKeyboardButton(text='Show All', callback_data='/showall'),InlineKeyboardButton(text='Reload Images', callback_data='/reload')],[InlineKeyboardButton(text='Send CCTV images to group(s).', callback_data='/grpcctv'),InlineKeyboardButton(text='Send weather to group(s).', callback_data='/grpweather')],[InlineKeyboardButton(text='Get CIMB Rate', callback_data='/getrate')]]
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)

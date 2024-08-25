@@ -27,7 +27,7 @@ if os.getenv('ENVIRONMENT') in ['prod']:
 else:
     BASE_DIR = Path(__file__).resolve().parent.parent
     STATICFILES_DIRS = [os.path.join(BASE_DIR,'')]
-    STATIC_URL = os.getenv('STATIC')
+    STATIC_URL = os.getenv('STATIC','/static/')
     STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
     MEDIA_ROOT = os.path.join(BASE_DIR, '/media/')
 # Quick-start development settings - unsuitable for production
@@ -36,9 +36,9 @@ else:
 #Environment
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-CSRF_TRUSTED_ORIGINS = ['https://jam-app.koyeb.app']
-CSRF_ALLOWED_ORIGINS = ['https://jam-app.koyeb.app']
-CORS_ORIGINS_WHITELIST = ['https://jam-app.koyeb.app']
+# CSRF_TRUSTED_ORIGINS = ['http://jam-app.koyeb.app']
+# CSRF_ALLOWED_ORIGINS = ['https://jam-app.koyeb.app']
+# CORS_ORIGINS_WHITELIST = ['https://jam-app.koyeb.app']
 
 #Keys
 SECRET_KEY = os.getenv('SECRET_KEY', '')
