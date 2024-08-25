@@ -22,6 +22,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LoginView
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 

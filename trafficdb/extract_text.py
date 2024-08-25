@@ -14,12 +14,13 @@ def get_rate():
     chrome_options.add_argument("--headless")  # Run Chrome in headless mode
     chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration (optional but recommended)
     chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
-    chrome_options.add_argument("--window-size=1920x1080")  # Set window size (optional)
+    #chrome_options.add_argument("--window-size=1920x1080")  # Set window size (optional)
     
     # Initialize the Chrome driver with the specified options
     driver = webdriver.Chrome(options=chrome_options)
-    
+
     val = "https://www.cimbclicks.com.sg/sgd-to-myr"
     driver.get(val)
     
