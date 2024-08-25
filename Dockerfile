@@ -1,5 +1,5 @@
 # Use a base image with Python
-FROM python:3-buster AS builder
+FROM python:3-bookworm AS builder
 
 WORKDIR /app
 
@@ -13,11 +13,11 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Stage 2: Runner
-FROM python:3-buster AS runner
+FROM python:3-bookworm AS runner
 
-# Install Firefox and geckodriver
-RUN apt-get update && apt-get install -y firefox-esr
-RUN apt-get install -y firefox-geckodriver
+# Install Chromium and ChromeDriver
+RUN apt-get update && apt-get install -y chromium-driver
+RUN apt-get install -y chromium-browser
 
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
