@@ -12,6 +12,7 @@ RUN pip install -r requirements.txt
 # Stage 2
 FROM python:3-alpine AS runner
 
+#Add Chromium
 RUN apk add chromium
 RUN apk add chromium-chromedriver
 
