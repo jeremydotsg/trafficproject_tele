@@ -12,6 +12,9 @@ RUN pip install -r requirements.txt
 # Stage 2
 FROM python:3-alpine AS runner
 
+RUN apk add chromium
+RUN apk add chromium-chromedriver
+
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV PORT=8000
@@ -19,15 +22,12 @@ ENV PORT=8000
 WORKDIR /app
 
 COPY --from=builder /app/venv venv
-COPY trafficdb trafficdb
-COPY trafficproject trafficproject
-COPY manage.py manage.py
-#COPY Procfile Procfile
+COPY . .
 
 WORKDIR /app
 
 EXPOSE ${PORT}
 
-CMD python manage.py migrate
-CMD python manage.py collectstatic --noinput
+RUN python manage.py migrate
+RUN python manage.py collectstatic --noinput
 CMD gunicorn --bind :${PORT} --workers 2 --env DJANGO_SETTINGS_MODULE=trafficproject.settings trafficproject.wsgi
