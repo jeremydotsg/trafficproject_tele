@@ -54,7 +54,8 @@ elif os.getenv('ENVIRONMENT') in ['devbot', 'prod','prod_koyeb']:
     
     if os.getenv('ENVIRONMENT') == 'devbot':
         randstring = '1234'
-        
+    elif os.getenv('ENVIRONMENT') == 'prod_koyeb':
+        randstring = 'bot_123456789'
     proxy_url = os.getenv('PROXY_URL', '')
     tele_secret = os.getenv('TELE_SECRET', '')
     webhook_url = os.getenv('WEBHOOK_URL', '') + randstring + '/'
