@@ -31,4 +31,4 @@ EXPOSE ${PORT}
 
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
-CMD gunicorn --bind :${PORT} --workers 2 --env DJANGO_SETTINGS_MODULE=trafficproject.settings trafficproject.wsgi
+CMD waitress-serve --port=${PORT} trafficproject.wsgi:application
