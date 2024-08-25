@@ -39,6 +39,10 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 CSRF_TRUSTED_ORIGINS = ['https://jam-app.koyeb.app','http://jam-app.koyeb.app','http://jam-app.koyeb.app:8000','https://jam-app.koyeb.app:8000','http://trafficproject-koyeb.jem-app.internal:8000']
 CSRF_ALLOWED_ORIGINS = ['https://jam-app.koyeb.app','http://jam-app.koyeb.app','http://jam-app.koyeb.app:8000','https://jam-app.koyeb.app:8000','http://trafficproject-koyeb.jem-app.internal:8000']
 CORS_ORIGINS_WHITELIST = ['https://jam-app.koyeb.app','http://jam-app.koyeb.app','http://jam-app.koyeb.app:8000','https://jam-app.koyeb.app:8000','http://trafficproject-koyeb.jem-app.internal:8000']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 
 #Keys
 SECRET_KEY = os.getenv('SECRET_KEY', '')
