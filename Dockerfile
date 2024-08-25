@@ -17,7 +17,7 @@ FROM python:3-alpine AS runner
 
 # Install Firefox and geckodriver
 RUN apk add firefox-esr
-RUN apk add geckodriver
+RUN apk add geckodriver=0.35.0-r0  # Specify the correct geckodriver version
 
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
