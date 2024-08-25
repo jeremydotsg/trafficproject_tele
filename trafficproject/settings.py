@@ -36,9 +36,9 @@ else:
 #Environment
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-CSRF_TRUSTED_ORIGINS = ['http://jam-app.koyeb.app']
-CSRF_ALLOWED_ORIGINS = ['https://jam-app.koyeb.app']
-CORS_ORIGINS_WHITELIST = ['https://jam-app.koyeb.app']
+CSRF_TRUSTED_ORIGINS = ['https://jam-app.koyeb.app','http://jam-app.koyeb.app','http://jam-app.koyeb.app:8000','https://jam-app.koyeb.app:8000','http://trafficproject-koyeb.jem-app.internal:8000']
+CSRF_ALLOWED_ORIGINS = ['https://jam-app.koyeb.app','http://jam-app.koyeb.app','http://jam-app.koyeb.app:8000','https://jam-app.koyeb.app:8000','http://trafficproject-koyeb.jem-app.internal:8000']
+CORS_ORIGINS_WHITELIST = ['https://jam-app.koyeb.app','http://jam-app.koyeb.app','http://jam-app.koyeb.app:8000','https://jam-app.koyeb.app:8000','http://trafficproject-koyeb.jem-app.internal:8000']
 
 #Keys
 SECRET_KEY = os.getenv('SECRET_KEY', '')
@@ -59,7 +59,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,7 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-#    'trafficdb.middleware.BlockNonLocalMiddleware',
+    'trafficdb.middleware.BlockNonLocalMiddleware',
 ]
 
 ROOT_URLCONF = 'trafficproject.urls'
