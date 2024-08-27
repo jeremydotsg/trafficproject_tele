@@ -1,23 +1,18 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from bs4 import BeautifulSoup
 import re
 import time
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from webdriver_manager.firefox import GeckoDriverManager
 
+# Set up Firefox options for headless mode
+firefox_options = Options()
+firefox_options.headless = True
+firefox_options.add_argument("--headless")
 
-# Set up Chrome options for headless mode
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument('--incognito')
-chrome_options.add_argument('--ignore-certificate-errors')
-chrome_options.add_argument('--disable-extensions')
-chrome_options.add_argument('--disable-gpu')
-chrome_options.add_argument('--no-sandbox')
-#chrome_options.add_argument('--disable-dev-shm-usage')
-
-
-# Initialize the Chrome driver with the specified options
-driver = webdriver.Chrome(options=chrome_options)
+# Initialize the Firefox driver with the specified options
+driver = webdriver.Firefox(options=firefox_options,service=FirefoxService(GeckoDriverManager().install()))
 
 val = "https://www.cimbclicks.com.sg/sgd-to-myr"
 driver.get(val)
