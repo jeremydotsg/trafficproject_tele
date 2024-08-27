@@ -295,6 +295,10 @@ def webhook(request,ranid):
         #msg = json.loads(request.body)
         resp = process_routine_job(request, bot)
         return JsonResponse(resp, status=200)
+    elif request.method == 'POST' and ranid == 'ratejob':
+        #msg = json.loads(request.body)
+        resp = process_rate_job(request, bot)
+        return JsonResponse(resp, status=200)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
