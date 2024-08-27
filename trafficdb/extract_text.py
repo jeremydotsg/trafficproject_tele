@@ -20,7 +20,7 @@ def get_rate():
         driver.get(val)
         
         # Wait for five seconds
-        time.sleep(5)
+        time.sleep(2)
         
         # Get the page source after the element is present
         page_source = driver.page_source
