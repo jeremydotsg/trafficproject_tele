@@ -550,7 +550,7 @@ def process_rate_job(request, bot):
     # Split the string into a list by commas
     chat_list = chat_list_str.split(',')
     for chat_id in chat_list:
-        bot.sendMessage(chat_id, "CIMB Rate" + str(extract_text.get_rate()))
+        bot.sendMessage(chat_id, "CIMB Rate: " + str(extract_text.get_rate()))
         
     return update_return_response(None,'ok')
 
