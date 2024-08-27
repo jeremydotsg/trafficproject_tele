@@ -543,6 +543,17 @@ def process_routine_job(request, bot):
         
     return update_return_response(None,'ok')
 
+def process_rate_job(request, bot):
+    chat_list_str = os.getenv('CHAT_RATE_ID', '')
+    if not check_whitelist("9999"):
+        return update_return_response(None,'batchoff')
+    # Split the string into a list by commas
+    chat_list = chat_list_str.split(',')
+    for chat_id in chat_list:
+        bot.sendMessage(chat_id, "CIMB Rate" + str(extract_text.get_rate()))
+        
+    return update_return_response(None,'ok')
+
 def process_weather(request, bot):
     chat_list_str = os.getenv('CHAT_ID', '')
     if not check_whitelist("9999"):
