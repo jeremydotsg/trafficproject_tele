@@ -11,9 +11,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Install system dependencies (if needed)
 RUN apt-get update && apt-get install -y gcc musl-dev libffi-dev libssl-dev
 
-# Install Firefox ESR and GeckoDriver
-RUN apt-get install -y firefox-esr
-
 # Copy requirements file and install dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt
@@ -26,6 +23,12 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV PORT=8000
 
 WORKDIR /app
+# Install system dependencies (if needed)
+RUN apt-get update && apt-get install -y gcc musl-dev libffi-dev libssl-dev
+# Install Firefox ESR and GeckoDriver
+RUN apt-get install -y firefox-esr
+
+WORKDIR /app
 
 # Copy the virtual environment from the builder stage
 COPY --from=builder /app/venv venv
@@ -34,6 +37,7 @@ COPY . .
 EXPOSE ${PORT}
 
 # Run database migrations and collect static files
+RUN pip install -r requirements.txt
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
