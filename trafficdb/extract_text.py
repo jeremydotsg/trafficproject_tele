@@ -2,8 +2,9 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from bs4 import BeautifulSoup
 import re
-import time
-from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.firefox import GeckoDriverManager
 
 def get_rate():
@@ -19,8 +20,10 @@ def get_rate():
         val = "https://www.cimbclicks.com.sg/sgd-to-myr"
         driver.get(val)
         
-        # Wait for five seconds
-        time.sleep(3)
+        # Wait for the "rateStr" element to contain the text "SGD"
+        wait = WebDriverWait(driver, 10)
+        element_locator = (By.CLASS_NAME, 'rateStr')
+        wait.until(EC.text_to_be_present_in_element(element_locator, "SGD"))
         
         # Get the page source after the element is present
         page_source = driver.page_source
