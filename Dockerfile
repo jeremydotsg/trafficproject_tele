@@ -40,15 +40,19 @@ WORKDIR /app
 COPY --from=builder /app/venv venv
 COPY . .
 
+
 EXPOSE ${PORT}
 
 # Run database migrations and collect static files
 RUN pip install -r requirements.txt
 RUN pip install mod_wsgi
+RUN chmod 776 /app/
+RUN chown www-user:www-user /app/db.sqlite3
+RUN chmod 766 /app/db.sqlite3
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
-USER www-user
 WORKDIR /app
+
 # Start the application using mod_wsgi
 CMD mod_wsgi-express start-server --port=${PORT} --user=www-user --url-alias /static /app/static  --application-type module trafficproject.wsgi
