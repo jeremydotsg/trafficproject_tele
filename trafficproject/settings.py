@@ -18,7 +18,10 @@ import os
 
 load_dotenv()
 
-STATIC_URL = "/static/"
+# Set the logging level to DEBUG
+logging.basicConfig(level=logging.DEBUG)
+
+STATIC_URL = "static/"
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 if os.getenv('ENVIRONMENT') in ['prod']:
     BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,10 +29,14 @@ if os.getenv('ENVIRONMENT') in ['prod']:
     STATIC_ROOT = os.getenv('STATIC_ROOT')
 else:
     BASE_DIR = Path(__file__).resolve().parent.parent
-    STATICFILES_DIRS = [os.path.join(BASE_DIR,'')]
-    STATIC_URL = os.getenv('STATIC','/static/')
-    STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
-    MEDIA_ROOT = os.path.join(BASE_DIR, '/media/')
+    #STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+    STATIC_URL = os.getenv('STATIC', '/static/')
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    
+    print(STATIC_URL)
+    print(STATIC_ROOT)
+    print(MEDIA_ROOT)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -140,60 +147,37 @@ LOG_MIDDLEWARE_FILENAME = os.path.join(LOG_BASE_PATH, 'middleware.log')
 #         print(directory)
 
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'asia_singapore': {
-#             '()': AsiaSingaporeFormatter,
-#             'format': '%(asctime)s %(levelname)s %(message)s',
-#             'datefmt': '%Y-%m-%d %H:%M:%S',
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'INFO',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'asia_singapore',
-#             'when': 'D',
-#             'interval': 1,
-#             'backupCount': 7,
-#         },
-#         'trafficdb_file': {
-#             'level': 'INFO',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'asia_singapore',
-#             'when': 'D',
-#             'interval': 1,
-#             'backupCount': 7,
-#         },
-#         'trafficdb_middleware_file': {
-#             'level': 'INFO',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'asia_singapore',
-#             'when': 'D',
-#             'interval': 1,
-#             'backupCount': 7,
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],
-#             'level': 'INFO',
-#             'propagate': True,
-#         },
-#         'trafficdb': {
-#             'handlers': ['trafficdb_file'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#         'trafficdb_middleware': {
-#             'handlers': ['trafficdb_middleware_file'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#     },
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Set the desired log level
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'trafficdb': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'trafficdb_middleware': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
 
 
 
