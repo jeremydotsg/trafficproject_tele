@@ -30,7 +30,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox ESR and GeckoDriver (if needed)
-RUN apk add --no-cache firefox-esr
+RUN apk add --no-cache firefox
 # Install Apache2 and apache2-dev (if needed)
 RUN apk add --no-cache apache2 apache2-dev
 
@@ -48,6 +48,7 @@ RUN python manage.py collectstatic --noinput
 RUN pip install mod_wsgi
 RUN chmod 776 /app/
 RUN chown www-user:www-user /app/db.sqlite3
+RUN chown www-user:www-user /app/static
 RUN chmod 766 /app/db.sqlite3
 
 WORKDIR /app
