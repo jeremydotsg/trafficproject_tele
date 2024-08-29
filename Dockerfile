@@ -1,5 +1,5 @@
 # Use a base image with Python and Debian 12 (Bookworm)
-FROM python:3.9.19-bookworm AS builder
+FROM python:3.12.5-slim-bookworm AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Stage 2: Runner
-FROM python:3.9.19-bookworm AS runner
+FROM python:3.12.5-slim-bookworm AS runner
 
 # Create a non-root user (replace 'myuser' with your desired username)
 RUN useradd -m -U -s /bin/bash www-user
