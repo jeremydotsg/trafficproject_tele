@@ -29,9 +29,9 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
-# Install Firefox ESR and GeckoDriver (if needed)
+# Install Firefox ESR
 RUN apk add --no-cache firefox
-# Install Apache2 and apache2-dev (if needed)
+# Install Apache2 and apache2-dev
 RUN apk add --no-cache apache2 apache2-dev
 
 WORKDIR /app
