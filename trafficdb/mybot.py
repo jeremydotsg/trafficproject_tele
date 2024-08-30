@@ -13,6 +13,7 @@ from aiohttp.web_response import json_response
 from . import weather
 from . import botqueue
 from . import extract_text
+from django.conf import settings
 
 load_dotenv()
 logger = logging.getLogger('trafficdb')
@@ -20,7 +21,7 @@ bot = None
 bot_name = os.getenv('BOT_NAME', '')
 # Change here for any settings
 causeway_cameras = ["2701","2702","2704"]
-tuas_cameras = ["4703","4713"]
+tuas_cameras = ["4703","4713", "4712"]
 
 photo_dict = {
     "causeway1": "2701",
@@ -121,7 +122,10 @@ msg_dict = {
     "lta_tnc" : "\nNote: This bot uses the LTA's Traffic Images dataset accessed at the time of request and made available under the terms of the <a href=\"https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html\">Singapore Open Data Licence version 1.0</a>.",
     "job" : "Triggered job manually.",
     "beta"  : "Beta mode: Currently in limited beta mode. Watch out when this bot is available.",
-    "tnc" : "<b>Terms & Conditions</b>\nBy interacting with this Bot, you agree to the <a href=\"https://mygowhere.pythonanywhere.com/trafficdb/disclaimer\">disclaimer published here</a>.\n"
+    "tnc" : "<b>Terms & Conditions</b>\nBy interacting with this Bot, you agree to the <a href=\"https://mygowhere.pythonanywhere.com/trafficdb/disclaimer\">disclaimer published here</a>.\n",
+    "getrate" : "Getting rate from CIMB.",
+    "geteverything" : "Retrieving all traffic cameras. This will take a while.",
+    "getstats" : "Getting server stats.",
 }
 
 resp = {
@@ -298,7 +302,7 @@ def process_telebot_request(request, bot):
                 sendReplyPhoto(bot, command,chat_id,msg_id, is_group)
                 return update_return_response(req_obj,'ok')            
             # Whitelist users (and groups) only commands
-            elif command in ['reload','showall','grpcctv','grpweather', 'getrate']:
+            elif command in ['reload','showall','grpcctv','grpweather', 'getrate','geteverything','getstats']:
                 if check_admin(user_id):
                     if command in ['showall']:
                         sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
@@ -315,8 +319,17 @@ def process_telebot_request(request, bot):
                         process_weather(req_obj,bot)
                         return update_return_response(req_obj,'ok') 
                     elif command == 'getrate':
+                        bot.sendMessage(chat_id, msg_dict['getrate'])
                         bot.sendMessage(chat_id, extract_text.get_rate())
                         return update_return_response(req_obj,'ok') 
+                    elif command == 'geteverything':
+                        bot.sendMessage(chat_id, msg_dict['geteverything'])
+                        get_everything()
+                        return update_return_response(req_obj,'ok')
+                    elif command == 'getstats':
+                        bot.sendMessage(chat_id, msg_dict['getstats'])
+                        bot.sendMessage(chat_id, get_server_stats())
+                        return update_return_response(req_obj,'ok')
                 else:
                     if not is_group:
                         bot.sendMessage(chat_id, msg_dict['notallowed'], reply_to_message_id=msg_id) 
@@ -333,9 +346,9 @@ def process_telebot_request(request, bot):
         logger.info("Webhook :: Not a message.")
         return update_return_response(req_obj,'ignored') 
 
-def getSavePhoto(id):
+def getSavePhoto(id, all=None):
     camera_id = None
-    file_path = os.getenv('STATIC_IMG_PATH')
+    file_path = settings.STATIC_ROOT
     img_full_path = os.path.join(file_path, f"image{id}.jpg")
 
     # Check if the file exists and was modified within the last 5 minutes
@@ -348,13 +361,13 @@ def getSavePhoto(id):
 
         # Get the URL from environment variable
         url = os.getenv('TRAFFIC_IMAGES_URL')
-        
+        url_list = ""
         # Make the request
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             data = response.json()
             for item in data["value"]:
-                if item["CameraID"] in tuas_cameras or item["CameraID"] in causeway_cameras:
+                if item["CameraID"] in tuas_cameras or item["CameraID"] in causeway_cameras or all:
                     image_url = item["ImageLink"]
                     camera_id = item["CameraID"]
                     image_response = requests.get(image_url)
@@ -409,15 +422,14 @@ def sendReplyPhotoGroup(bot, chat_id, msg_id, is_group):
         bot.sendMessage(chat_id, msg_dict['wait'] + msg_dict['lta_tnc'], parse_mode="HTML")
     
     camera_list = None
-        
-    # Which checkpoint?
+    
     camera_list = causeway_cameras + tuas_cameras
     
     # Pull all the photos in the media group
     media_group = []
     for camera in camera_list:
         input_media = None
-        photo_url = getSavePhoto(camera)
+        photo_url = getSavePhoto(camera, all)
         if photo_url:
             logger.info('Photo Path :: ' + str(photo_url))
             input_media = InputMediaPhoto(media=open(photo_url,'rb'),caption=caption_dict[camera])
@@ -425,31 +437,35 @@ def sendReplyPhotoGroup(bot, chat_id, msg_id, is_group):
     if is_group:
         bot.sendMediaGroup(chat_id=chat_id, media=media_group)
     else:
-        bot.sendMediaGroup(chat_id=chat_id, media=media_group, reply_to_message_id=msg_id)
+        bot.sendMediaGroup(chat_id=chat_id, media=media_group)
     
 def reloadPhotos(bot, chat_id, msg_id, is_group):
     file_path = os.getenv('STATIC_IMG_PATH')
     msg_to_send = ""
     logger.info('Reload Photos :: Start')
     
-    for key, value in photo_dict.items():  # Corrected iteration over items
-        img_full_path = os.path.join(file_path, f"image{value}.jpg")
+    camera_list = None
+    
+    camera_list = causeway_cameras + tuas_cameras
+    
+    for camera in camera_list:  # Corrected iteration over items
+        img_full_path = os.path.join(file_path, f"image{camera}.jpg")
         
         try:
             if os.path.exists(img_full_path):  # Corrected path check
                 os.remove(img_full_path)
                 logger.info(f"The file {img_full_path} has been deleted.")
-                msg_to_send += 'Removed image' + value + '.jpg.\n'
+                msg_to_send += 'Removed image' + camera + '.jpg.\n'
             else:
                 logger.info(f"The file {img_full_path} does not exist.")
-                msg_to_send += 'Not exist image' + value + '.jpg.\n'
+                msg_to_send += 'Not exist image' + camera + '.jpg.\n'
         except Exception as e:
             logger.error(f"Error deleting file {img_full_path}: {e}")
-            msg_to_send += f" Error deleting image{value}.jpg.\n"
+            msg_to_send += f" Error deleting image{camera}.jpg.\n"
 
     msg_to_send += 'Completed all deletion. Proceed to pull new photos.'
     if not is_group: 
-        bot.sendMessage(chat_id, msg_to_send, reply_to_message_id=msg_id)
+        bot.sendMessage(chat_id, msg_to_send)
     else:
         bot.sendMessage(chat_id, msg_dict['wait'])
     sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
@@ -625,7 +641,11 @@ def send_start_reply(bot, chat_id, msg_id, is_group):
                 [InlineKeyboardButton(text='T&Cs', callback_data='/tnc')],
            ]
     if check_admin(chat_id):
-        keyboard_buttons += [[InlineKeyboardButton(text='Admin Functions', callback_data='/start')],[InlineKeyboardButton(text='Show All', callback_data='/showall'),InlineKeyboardButton(text='Reload Images', callback_data='/reload')],[InlineKeyboardButton(text='Send CCTV images to group(s).', callback_data='/grpcctv'),InlineKeyboardButton(text='Send weather to group(s).', callback_data='/grpweather')],[InlineKeyboardButton(text='Get CIMB Rate', callback_data='/getrate')]]
+        keyboard_buttons += [[InlineKeyboardButton(text='Admin Functions', callback_data='/start')],
+                             [InlineKeyboardButton(text='Show Chkpt Cams', callback_data='/showall'),InlineKeyboardButton(text='Reload Chkpt Cams', callback_data='/reload')],
+                             [InlineKeyboardButton(text='Send Chkpt Cams (Grp)', callback_data='/grpcctv'),InlineKeyboardButton(text='Send Weather (Grp)', callback_data='/grpweather')],
+                             [InlineKeyboardButton(text='Get All Cams', callback_data='/geteverything'),InlineKeyboardButton(text='Get Stats', callback_data='/getstats')],
+                             [InlineKeyboardButton(text='Get CIMB Rate', callback_data='/getrate')],]
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)
@@ -669,4 +689,13 @@ def refresh_lta_image_web():
         input_media = None
         photo_url = getSavePhoto(value)
         
-    
+def get_server_stats():
+    stat_str = "Server Stats"
+    stat_str += "\nServer: " + os.getenv('ENVIRONMENT')
+    # stat_str += "/nStatic Path" +  os.getenv('ENVIRONMENT')
+    return stat_str
+
+def get_everything():
+    getSavePhoto("2701", True)
+    url_str = ""
+    return url_str
