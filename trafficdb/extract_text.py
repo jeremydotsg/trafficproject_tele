@@ -14,6 +14,7 @@ def get_rate():
         firefox_options = Options()
         firefox_options.headless = True
         firefox_options.add_argument("--headless")
+        firefox_options.add_argument("-private")
         
         # Initialize the Firefox driver with the specified options
         driver = webdriver.Firefox(options=firefox_options, service=FirefoxService(GeckoDriverManager().install()))
@@ -22,20 +23,18 @@ def get_rate():
         driver.get(val)
         
         # Wait for the "rateStr" element to contain the text "SGD"
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 5)
         element_locator = (By.CLASS_NAME, 'rateStr')
         wait.until(EC.text_to_be_present_in_element(element_locator, "SGD"))
         
         # Get the page source after the element is present
         page_source = driver.page_source
-        
+        driver.quit()
         soup = BeautifulSoup(page_source, features="html.parser")
         rateStr = soup.find(attrs={"class": "rateStr"})
         
         # Use regular expression to extract the rate
         rate = re.search(r"SGD 1.00 = MYR ([\d.]+)", rateStr.text).group(1)
-        
-        driver.quit()
         
         return rate
     except Exception as e:
