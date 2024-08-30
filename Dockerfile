@@ -9,7 +9,7 @@ ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install system dependencies
-RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
+# RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 
 # Copy requirements file and install dependencies
 COPY requirements.txt .
@@ -28,7 +28,7 @@ ENV PORT=80
 WORKDIR /app
 
 # Install system dependencies
-RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
+# RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox ESR
 RUN apk add --no-cache firefox
 # Install Apache2 and apache2-dev
