@@ -196,7 +196,7 @@ if os.getenv('ENVIRONMENT') == 'prod':
             'PORT': os.getenv('PROD_DB_PORT'),
         }
     }
-elif os.getenv('ENVIRONMENT') == 'prod_koyeb':
+elif os.getenv('ENVIRONMENT') == 'prod_koyeb' and os.getenv('PERSIST_DB') == "True":
     DATABASES = {
         'default': {
             'ENGINE': os.getenv('PROD_DB_ENGINE'),

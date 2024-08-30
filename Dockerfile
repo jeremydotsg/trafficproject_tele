@@ -23,7 +23,7 @@ RUN adduser -D -u 1000 www-user
 
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV PORT=8000
+ENV PORT=80
 
 WORKDIR /app
 
@@ -32,7 +32,8 @@ RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox ESR
 RUN apk add --no-cache firefox
 # Install Apache2 and apache2-dev
-RUN apk add --no-cache apache2 apache2-dev
+#RUN apk add --no-cache apache2 apache2-dev
+RUN apk add nginx
 
 WORKDIR /app
 
@@ -45,15 +46,18 @@ EXPOSE ${PORT}
 # Run database migrations and collect static files
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
-RUN pip install mod_wsgi
+#RUN pip install mod_wsgi
 RUN pip install gunicorn
 RUN chmod 776 /app/
 RUN chown www-user:www-user /app/db.sqlite3
 RUN chown www-user:www-user /app/static
 RUN chmod 766 /app/db.sqlite3
 
+COPY config/default.conf /etc/nginx/http.d/default.conf
+
 WORKDIR /app
 
 # Start the application using mod_wsgi
+CMD sh config/start_server.sh
 #CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
-CMD mod_wsgi-express start-server --port=${PORT} --user=www-user --url-alias /static /app/static --application-type module trafficproject.wsgid
+# CMD mod_wsgi-express start-server --port=${PORT} --user=www-user --url-alias /static /app/static --application-type module trafficproject.wsgid
