@@ -33,7 +33,7 @@ RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 RUN apk add --no-cache firefox
 # Install Apache2 and apache2-dev
 #RUN apk add --no-cache apache2 apache2-dev
-RUN apk add nginx
+# RUN apk add nginx
 
 WORKDIR /app
 
@@ -53,7 +53,7 @@ RUN chown www-user:www-user /app/db.sqlite3
 RUN chown www-user:www-user /app/static
 RUN chmod 766 /app/db.sqlite3
 
-COPY config/default.conf /etc/nginx/http.d/default.conf
+# COPY config/default.conf /etc/nginx/http.d/default.conf
 
 WORKDIR /app
 
