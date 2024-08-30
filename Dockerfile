@@ -55,5 +55,10 @@ RUN chmod 766 /app/db.sqlite3
 WORKDIR /app
 
 # Start the application using mod_wsgi
+<<<<<<< HEAD
 #CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
 CMD mod_wsgi-express start-server --port=${PORT} --user=www-user --url-alias /static /app/static --application-type module trafficproject.wsgi
+=======
+CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
+# CMD mod_wsgi-express start-server --port=${PORT} --user=www-user --url-alias /static /app/static --application-type module trafficproject.wsgi
+>>>>>>> branch 'main' of https://github.com/jeremydotsg/trafficproject-koyeb.git
