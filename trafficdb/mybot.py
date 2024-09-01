@@ -644,8 +644,7 @@ def send_start_reply(bot, chat_id, msg_id, is_group):
         keyboard_buttons += [[InlineKeyboardButton(text='Admin Functions', callback_data='/start')],
                              [InlineKeyboardButton(text='Show Chkpt Cams', callback_data='/showall'),InlineKeyboardButton(text='Reload Chkpt Cams', callback_data='/reload')],
                              [InlineKeyboardButton(text='Send Chkpt Cams (Grp)', callback_data='/grpcctv'),InlineKeyboardButton(text='Send Weather (Grp)', callback_data='/grpweather')],
-                             [InlineKeyboardButton(text='Get All Cams', callback_data='/geteverything'),InlineKeyboardButton(text='Get Stats', callback_data='/getstats')],
-                             [InlineKeyboardButton(text='Get CIMB Rate', callback_data='/getrate')],]
+                             [InlineKeyboardButton(text='Get Stats', callback_data='/getstats'),InlineKeyboardButton(text='Get CIMB Rate', callback_data='/getrate')],]
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
     bot.sendMessage(chat_id, msg_dict['start'], reply_markup=keyboard)

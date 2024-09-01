@@ -31,6 +31,10 @@ WORKDIR /app
 # RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox ESR
 RUN apk add --no-cache firefox
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
+RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
+RUN mv geckodriver /usr/bin/
+RUN geckodriver --version
 # Install Apache2 and apache2-dev
 # RUN apk add --no-cache apache2 apache2-dev
 # RUN apk add nginx
