@@ -30,6 +30,10 @@ WORKDIR /app
 # RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox
 RUN apk add firefox
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
+RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
+RUN mv geckodriver /usr/bin/
+RUN geckodriver --version
 
 WORKDIR /app
 
