@@ -9,7 +9,7 @@ ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install system dependencies
-#RUN apt-get update && apt-get install -y gcc musl-dev libffi-dev libssl-dev
+# RUN apt-get update && apt-get install -y gcc musl-dev libffi-dev libssl-dev
 
 
 # Copy requirements file and install dependencies
@@ -27,13 +27,13 @@ ENV PORT=8000
 WORKDIR /app
 
 # Install system dependencies
-# RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox
-RUN apk add firefox
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
-RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
-RUN mv geckodriver /usr/bin/
-RUN geckodriver --version
+RUN apk add firefox-esr geckodriver
+#RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
+#RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
+#RUN mv geckodriver /usr/bin/
+#RUN geckodriver --version
 
 WORKDIR /app
 
