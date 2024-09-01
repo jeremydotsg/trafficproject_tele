@@ -306,7 +306,7 @@ def webhook(request,ranid):
         else:
             logger.error(request.method)
             logger.error(request.body)
-            return JsonResponse({'error': 'Method not allowed'}, status=405)
+            return JsonResponse({'error': 'Method not allowed'}, status=200)
     except Exception as e:
         logger.error('Failed to execute webhook: {}'.format(e))
         return JsonResponse({'error': 'Command not executed.'}, status=200)
