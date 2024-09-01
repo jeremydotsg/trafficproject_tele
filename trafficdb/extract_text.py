@@ -24,7 +24,7 @@ def get_rate():
         driver.get(val)
         
         # Wait for the "rateStr" element to contain the text "SGD"
-        time.sleep(3)
+        time.sleep(10)
         
         # Get the page source after the element is present
         page_source = driver.page_source
