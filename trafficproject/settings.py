@@ -35,9 +35,6 @@ else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     #STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     
-    print(STATIC_URL)
-    print(STATIC_ROOT)
-    print(MEDIA_ROOT)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -87,14 +84,14 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    #'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'trafficdb.middleware.BlockNonLocalMiddleware',
+    #'trafficdb.middleware.BlockNonLocalMiddleware',
 ]
 
 ROOT_URLCONF = 'trafficproject.urls'

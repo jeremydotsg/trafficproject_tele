@@ -164,3 +164,4 @@ static/img/
 
 # Prevent json datafiles from going into repo
 .json
+/datadump.json
