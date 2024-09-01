@@ -46,5 +46,4 @@ RUN python manage.py collectstatic --noinput
 WORKDIR /app
 
 # Start the application using mod_wsgi
-#CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
-CMD python manage.py runserver
+CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
