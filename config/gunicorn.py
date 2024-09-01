@@ -5,7 +5,7 @@ wsgi_app = "trafficproject.wsgi:application"
 # The granularity of Error log outputs
 loglevel = "error"
 # The number of worker processes for handling requests
-workers = 1
+workers = 2
 # The socket to bind
 bind = "0.0.0.0:8000" # Change to 8080 if using nginx
 # Restart workers when code changes (development only!)
@@ -17,4 +17,4 @@ reload = True
 # PID file so you can easily fetch process ID
 #pidfile = "/var/run/gunicorn/dev.pid"
 # Daemonize the Gunicorn process (detach & enter background)
-#daemon = True #Turn it on if using nginx
+daemon = True #Turn it on if using nginx

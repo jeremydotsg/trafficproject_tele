@@ -69,7 +69,7 @@ RUN python manage.py collectstatic --noinput
 WORKDIR /app
 
 # Start the application using mod_wsgi
-CMD gunicorn -c /app/config/gunicorn.py
+#CMD gunicorn -c /app/config/gunicorn.py
 #CMD sh config/start_server.sh
-#CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
+CMD gunicorn --bind :${PORT} --workers 2 trafficproject.wsgi
 # CMD mod_wsgi-express start-server --port=${PORT} --user=www-user --url-alias /static /app/static --application-type module trafficproject.wsgid

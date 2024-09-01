@@ -33,7 +33,7 @@ else:
     STATIC_URL = os.getenv('STATIC', '/static/')
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    #STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     
     print(STATIC_URL)
     print(STATIC_ROOT)
