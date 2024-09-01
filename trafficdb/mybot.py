@@ -31,85 +31,12 @@ photo_dict = {
     }
 
 caption_dict = {
-    "1111": "TPE(PIE) - Exit 2 to Loyang Ave",
-    "1112": "TPE(PIE) - Tampines Viaduct",
-    "1113": "Tanah Merah Coast Road towards Changi",
-    "1701": "CTE (AYE) - Moulmein Flyover LP448F",
-    "1702": "CTE (AYE) - Braddell Flyover LP274F",
-    "1703": "CTE (SLE) - Blk 22 St George's Road",
-    "1704": "CTE (AYE) - Entrance from Chin Swee Road",
-    "1705": "CTE (AYE) - Ang Mo Kio Ave 5 Flyover",
-    "1706": "CTE (AYE) - Yio Chu Kang Flyover",
-    "1707": "CTE (AYE) - Bukit Merah Flyover",
-    "1709": "CTE (AYE) - Exit 6 to Bukit Timah Road",
-    "1711": "CTE (AYE) - Ang Mo Kio Flyover",
     "2701": "Woodlands Causeway (Towards Johor)",
     "2702": "Woodlands Checkpoint",
-    "2703": "BKE (PIE) - Chantek F/O",
     "2704": "BKE (Woodlands Checkpoint) - Woodlands F/O",
-    "2705": "BKE (PIE) - Dairy Farm F/O",
-    "2706": "Entrance from Mandai Rd (Towards Checkpoint)",
-    "2707": "Exit 5 to KJE (towards PIE)",
-    "2708": "Exit 5 to KJE (Towards Checkpoint)",
-    "3702": "ECP (Changi) - Entrance from PIE",
-    "3704": "ECP (Changi) - Entrance from KPE",
-    "3705": "ECP (AYE) - Exit 2A to Changi Coast Road",
-    "3793": "ECP (Changi) - Laguna Flyover",
-    "3795": "ECP (City) - Marine Parade F/O",
-    "3796": "ECP (Changi) - Tanjong Katong F/O",
-    "3797": "ECP (City) - Tanjung Rhu",
-    "3798": "ECP (Changi) - Benjamin Sheares Bridge",
-    "4701": "AYE (City) - Alexander Road Exit",
-    "4702": "AYE (Jurong) - Keppel Viaduct",
     "4703": "Tuas Second Link",
-    "4704": "AYE (CTE) - Lower Delta Road F/O",
-    "4705": "AYE (MCE) - Entrance from Yuan Ching Rd",
-    "4706": "AYE (Jurong) - NUS Sch of Computing TID",
-    "4707": "AYE (MCE) - Entrance from Jln Ahmad Ibrahim",
-    "4708": "AYE (CTE) - ITE College West Dover TID",
-    "4709": "Clementi Ave 6 Entrance",
-    "4710": "AYE(Tuas) - Pandan Garden",
     "4712": "AYE(Tuas) - Tuas Ave 8 Exit",
     "4713": "Tuas Checkpoint",
-    "4714": "AYE (Tuas) - Near West Coast Walk",
-    "4716": "AYE (Tuas) - Entrance from Benoi Rd",
-    "4798": "Sentosa Tower 1",
-    "4799": "Sentosa Tower 2",
-    "5794": "PIEE (Jurong) - Bedok North",
-    "5795": "PIEE (Jurong) - Eunos F/O",
-    "5797": "PIEE (Jurong) - Paya Lebar F/O",
-    "5798": "PIEE (Jurong) - Kallang Sims Drive Blk 62",
-    "5799": "PIEE (Changi) - Woodsville F/O",
-    "6701": "PIEW (Changi) - Blk 65A Jln Tenteram: Kim Keat",
-    "6703": "PIEW (Changi) - Blk 173 Toa Payoh Lorong 1",
-    "6704": "PIEW (Jurong) - Mt Pleasant F/O",
-    "6705": "PIEW (Changi) - Adam F/O Special pole",
-    "6706": "PIEW (Changi) - BKE",
-    "6708": "Nanyang Flyover (Towards Changi)",
-    "6710": "Entrance from Jln Anak Bukit (Towards Changi)",
-    "6711": "Entrance from ECP (Towards Jurong)",
-    "6712": "Exit 27 to Clementi Ave 6",
-    "6713": "Entrance From Simei Ave (Towards Jurong)",
-    "6714": "Exit 35 to KJE (Towards Changi)",
-    "6715": "Hong Kah Flyover (Towards Jurong)",
-    "6716": "AYE Flyover",
-    "7791": "TPE (PIE) - Upper Changi F/O",
-    "7793": "TPE(PIE) - Entrance to PIE from Tampines Ave 10",
-    "7794": "TPE(SLE) - TPE Exit KPE",
-    "7795": "TPE(PIE) - Entrance from Tampines FO",
-    "7796": "TPE(SLE) - On rooflp of Blk 189A Rivervale Drive 9",
-    "7797": "TPE(PIE) - Seletar Flyover",
-    "7798": "TPE(SLE) - LP790F (On SLE Flyover)",
-    "8701": "KJE (PIE) - Choa Chu Kang West Flyover",
-    "8702": "KJE (BKE) - Exit To BKE",
-    "8704": "KJE (BKE) - Entrance From Choa Chu Kang Dr",
-    "8706": "KJE (BKE) - Tengah Flyover",
-    "9701": "SLE (TPE) - Lentor F/O",
-    "9702": "SLE(TPE) - Thomson Flyover",
-    "9703": "SLE(Woodlands) - Woodlands South Flyover",
-    "9704": "SLE(TPE) - Ulu Sembawang Flyover",
-    "9705": "SLE(TPE) - Beside Slip Road From Woodland Ave 2",
-    "9706": "SLE(Woodlands) - Mandai Lake Flyover",
     }
 msg_dict = {
     "start" : "Hello!\n\nTalk to me about SG JB Cross Border Travel. Here is what I can help you with!\n\nBy using this Bot, you agree to the Terms and Conditions viewable at /tnc.",
@@ -302,7 +229,7 @@ def process_telebot_request(request, bot):
                 sendReplyPhoto(bot, command,chat_id,msg_id, is_group)
                 return update_return_response(req_obj,'ok')            
             # Whitelist users (and groups) only commands
-            elif command in ['reload','showall','grpcctv','grpweather', 'getrate','geteverything','getstats']:
+            elif command in ['reload','showall','grpcctv','grpweather', 'getrate','getstats']:
                 if check_admin(user_id):
                     if command in ['showall']:
                         sendReplyPhotoGroup(bot, chat_id, msg_id, is_group)
@@ -322,10 +249,6 @@ def process_telebot_request(request, bot):
                         bot.sendMessage(chat_id, msg_dict['getrate'])
                         bot.sendMessage(chat_id, extract_text.get_rate())
                         return update_return_response(req_obj,'ok') 
-                    elif command == 'geteverything':
-                        bot.sendMessage(chat_id, msg_dict['geteverything'])
-                        get_everything()
-                        return update_return_response(req_obj,'ok')
                     elif command == 'getstats':
                         bot.sendMessage(chat_id, msg_dict['getstats'])
                         bot.sendMessage(chat_id, get_server_stats())
@@ -346,98 +269,77 @@ def process_telebot_request(request, bot):
         logger.info("Webhook :: Not a message.")
         return update_return_response(req_obj,'ignored') 
 
-def getSavePhoto(id, all=None):
-    camera_id = None
-    file_path = settings.STATIC_ROOT
+def getSavePhoto(id):
+    file_path = STATIC_ROOT
     img_full_path = os.path.join(file_path, f"image{id}.jpg")
 
     # Check if the file exists and was modified within the last 5 minutes
     if os.path.exists(img_full_path) and (time.time() - os.path.getmtime(img_full_path)) < 300:
         return img_full_path
-    else:
-        # Call LTA's API to pull all the images required
-        acct_key = os.getenv('ACCT_KEY')
-        headers = {'AccountKey': acct_key, 'accept': 'application/json'}
 
-        # Get the URL from environment variable
-        url = os.getenv('TRAFFIC_IMAGES_URL')
-        url_list = ""
-        # Make the request
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            for item in data["value"]:
-                if item["CameraID"] in tuas_cameras or item["CameraID"] in causeway_cameras or all:
-                    image_url = item["ImageLink"]
-                    camera_id = item["CameraID"]
-                    image_response = requests.get(image_url)
-                    if image_response.status_code == 200:
-                        full_file_name = os.path.join(file_path, f"image{camera_id}.jpg")
-                        with open(full_file_name, 'wb') as file:
-                            file.write(image_response.content)
-        return img_full_path
+    # Call LTA's API to pull all the images required
+    acct_key = os.getenv('ACCT_KEY')
+    headers = {'AccountKey': acct_key, 'accept': 'application/json'}
+    url = os.getenv('TRAFFIC_IMAGES_URL')
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        for item in data["value"]:
+            if item["CameraID"] in tuas_cameras or item["CameraID"] in causeway_cameras:
+                image_url = item["ImageLink"]
+                camera_id = item["CameraID"]
+                image_response = requests.get(image_url)
+                if image_response.status_code == 200:
+                    full_file_name = os.path.join(file_path, f"image{camera_id}.jpg")
+                    with open(full_file_name, 'wb') as file:
+                        file.write(image_response.content)
+    return img_full_path
 
 def sendReplyPhoto(bot, where, chat_id, msg_id, is_group):
     logger.info('Webhook :: Msg: ' + str(where))
+    
     if not is_group: 
         bot.sendMessage(chat_id, msg_dict['wait'] + msg_dict['lta_tnc'], parse_mode="HTML")
+    
     if where is None:
         bot.sendMessage(chat_id, msg_dict['junk'], reply_to_message_id=msg_id)
-        return update_return_response(req_obj,'junk')
-    else:
-        #Call API and get URL
-        camera_list = None
-        
-        # Which checkpoint?
-        if where == "causeway":
-            camera_list = causeway_cameras
-        elif where == "tuas":
-            camera_list = tuas_cameras
-        
-        # Pull all the photos in the media group
-        media_group = []
-        for camera in camera_list:
-            input_media = None
-            photo_url = getSavePhoto(camera)
-            if photo_url:
-                logger.info('Photo Path :: ' + str(photo_url))
-                input_media = InputMediaPhoto(media=open(photo_url,'rb'),caption=caption_dict[camera])
-                media_group.append(input_media)
+        return update_return_response(req_obj, 'junk')
+    
+    # Determine the camera list based on the checkpoint
+    camera_list = causeway_cameras if where == "causeway" else tuas_cameras if where == "tuas" else []
 
-        try:
-            if not is_group: 
-                bot.sendMediaGroup(chat_id, media=media_group, reply_to_message_id=msg_id)
-            else:
-                bot.sendMediaGroup(chat_id, media=media_group)
-        except Exception as e:
-            logger.error('Failed to send photo: {}'.format(e))
-            if not is_group:
-                bot.sendMessage(chat_id,'Failed to send photo.', reply_to_message_id=msg_id)
-            else:
-                bot.sendMessage(chat_id,'Failed to send photo.')
+    # Pull all the photos in the media group
+    media_group = [
+        InputMediaPhoto(media=open(getSavePhoto(camera), 'rb'), caption=caption_dict[camera])
+        for camera in camera_list if getSavePhoto(camera)
+    ]
+
+    try:
+        bot.sendMediaGroup(chat_id, media=media_group, reply_to_message_id=msg_id if not is_group else None)
+    except Exception as e:
+        logger.error('Failed to send photo: {}'.format(e))
+        bot.sendMessage(chat_id, 'Failed to send photo.', reply_to_message_id=msg_id if not is_group else None)
 
 def sendReplyPhotoGroup(bot, chat_id, msg_id, is_group):
-    # Get photo from LTA or local
+    # Notify user if not in a group
     if not is_group: 
         bot.sendMessage(chat_id, msg_dict['wait'] + msg_dict['lta_tnc'], parse_mode="HTML")
     
-    camera_list = None
-    
+    # Combine camera lists
     camera_list = causeway_cameras + tuas_cameras
     
     # Pull all the photos in the media group
-    media_group = []
-    for camera in camera_list:
-        input_media = None
-        photo_url = getSavePhoto(camera, all)
-        if photo_url:
-            logger.info('Photo Path :: ' + str(photo_url))
-            input_media = InputMediaPhoto(media=open(photo_url,'rb'),caption=caption_dict[camera])
-            media_group.append(input_media)
-    if is_group:
+    media_group = [
+        InputMediaPhoto(media=open(getSavePhoto(camera), 'rb'), caption=caption_dict[camera])
+        for camera in camera_list if getSavePhoto(camera)
+    ]
+
+    try:
         bot.sendMediaGroup(chat_id=chat_id, media=media_group)
-    else:
-        bot.sendMediaGroup(chat_id=chat_id, media=media_group)
+    except Exception as e:
+        logger.error('Failed to send photo: {}'.format(e))
+        bot.sendMessage(chat_id, 'Failed to send photo.', reply_to_message_id=msg_id if not is_group else None)
     
 def reloadPhotos(bot, chat_id, msg_id, is_group):
     file_path = os.getenv('STATIC_IMG_PATH')
@@ -684,9 +586,10 @@ def process_weather(request, bot):
     return update_return_response(None,'ok')
 
 def refresh_lta_image_web():
-    for key, value in photo_dict.items():
-        input_media = None
-        photo_url = getSavePhoto(value)
+    camera_list = causeway_cameras + tuas_cameras
+    
+    for camera in camera_list:  # Corrected iteration over items
+        getSavePhoto(camera)
         
 def get_server_stats():
     stat_str = "Server Stats"
