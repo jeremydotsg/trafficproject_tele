@@ -38,9 +38,7 @@ load_dotenv()
 logger = logging.getLogger('trafficdb')
 
 # Random String to protect endpoint
-randstring = uuid.uuid4().hex
-if os.getenv('ENVIRONMENT') == 'devbot':
-    randstring = '1234'
+randstring = 'prodkoyeb'
 is_dev = False
 bot = None
 bot_name = os.getenv('BOT_NAME', '')
