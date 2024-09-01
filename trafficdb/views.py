@@ -39,41 +39,37 @@ logger = logging.getLogger('trafficdb')
 
 # Random String to protect endpoint
 randstring = uuid.uuid4().hex
+if os.getenv('ENVIRONMENT') == 'devbot':
+    randstring = '1234'
 is_dev = False
 bot = None
 bot_name = os.getenv('BOT_NAME', '')
 print(os.getenv('ENVIRONMENT'))
 
-def start_bot():
-    # Bot Settings
-    # Dev Only
-    
-    if os.getenv('ENVIRONMENT') in ['dev']:
-        from unittest.mock import MagicMock
-        bot=MagicMock()
-        is_dev=True
-    elif os.getenv('ENVIRONMENT') in ['devbot', 'prod','prod_koyeb']:
-        
-        if os.getenv('ENVIRONMENT') == 'devbot':
-            randstring = '1234'
-    
-        proxy_url = os.getenv('PROXY_URL', '')
-        tele_secret = os.getenv('TELE_SECRET', '')
-        webhook_url = os.getenv('WEBHOOK_URL', '') + randstring + '/'
-        
-        if os.getenv('ENVIRONMENT') == 'prod':
-            # Set up telepot with proxy
-            telepot.api._pools = {
-                'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=100),
-            }
-            telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=100))
-    
-        # Initialize bot with secret token
-        bot = telepot.Bot(tele_secret)
-        bot.setWebhook(webhook_url, max_connections=1)
+# Bot Settings
+# Dev Only
 
-# Call start_bot()
-start_bot()
+if os.getenv('ENVIRONMENT') in ['dev']:
+    from unittest.mock import MagicMock
+    bot=MagicMock()
+    is_dev=True
+elif os.getenv('ENVIRONMENT') in ['devbot', 'prod','prod_koyeb']:
+       
+    proxy_url = os.getenv('PROXY_URL', '')
+    tele_secret = os.getenv('TELE_SECRET', '')
+    webhook_url = os.getenv('WEBHOOK_URL', '') + randstring + '/'
+    
+    if os.getenv('ENVIRONMENT') == 'prod':
+        # Set up telepot with proxy
+        telepot.api._pools = {
+            'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=100),
+        }
+        telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=100))
+
+    # Initialize bot with secret token
+    bot = telepot.Bot(tele_secret)
+    bot.setWebhook(webhook_url, max_connections=1)
+
 
 #Create your views here.
 @method_decorator(never_cache, name='dispatch')
@@ -308,7 +304,8 @@ def webhook(request,ranid):
             start_bot()
             return JsonResponse({'status':'ok','job':'refreshbot'},status=200)
         else:
-            logger.error(request)
+            logger.error(request.method)
+            logger.error(request.body)
             return JsonResponse({'error': 'Method not allowed'}, status=405)
     except Exception as e:
         logger.error('Failed to execute webhook: {}'.format(e))
@@ -322,4 +319,28 @@ def validate_token(token_id,token_to_validate):
         return True
     else:
         return False
+
+def start_bot():
+    # Bot Settings
+    # Dev Only
     
+    if os.getenv('ENVIRONMENT') in ['dev']:
+        from unittest.mock import MagicMock
+        bot=MagicMock()
+        is_dev=True
+    elif os.getenv('ENVIRONMENT') in ['devbot', 'prod','prod_koyeb']:
+           
+        proxy_url = os.getenv('PROXY_URL', '')
+        tele_secret = os.getenv('TELE_SECRET', '')
+        webhook_url = os.getenv('WEBHOOK_URL', '') + randstring + '/'
+        
+        if os.getenv('ENVIRONMENT') == 'prod':
+            # Set up telepot with proxy
+            telepot.api._pools = {
+                'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=100),
+            }
+            telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=100))
+    
+        # Initialize bot with secret token
+        bot = telepot.Bot(tele_secret)
+        bot.setWebhook(webhook_url, max_connections=1)   
