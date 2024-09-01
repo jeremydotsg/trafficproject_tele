@@ -38,6 +38,7 @@ load_dotenv()
 logger = logging.getLogger('trafficdb')
 
 # Random String to protect endpoint
+randstring = uuid.uuid4().hex
 is_dev = False
 bot = None
 bot_name = os.getenv('BOT_NAME', '')
@@ -46,7 +47,6 @@ print(os.getenv('ENVIRONMENT'))
 def start_bot():
     # Bot Settings
     # Dev Only
-    randstring = None
     
     if os.getenv('ENVIRONMENT') in ['dev']:
         from unittest.mock import MagicMock
@@ -56,8 +56,6 @@ def start_bot():
         
         if os.getenv('ENVIRONMENT') == 'devbot':
             randstring = '1234'
-        else:
-            randstring = uuid.uuid4().hex
     
         proxy_url = os.getenv('PROXY_URL', '')
         tele_secret = os.getenv('TELE_SECRET', '')
