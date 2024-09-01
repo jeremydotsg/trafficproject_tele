@@ -1,17 +1,34 @@
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+from bs4 import BeautifulSoup
 import re
-from playwright.sync_api import Page, expect
+import time
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from webdriver_manager.firefox import GeckoDriverManager
 
-def test_has_title(page: Page):
-    page.goto("https://playwright.dev/")
+# Set up Firefox options for headless mode
+firefox_options = Options()
+firefox_options.headless = True
+firefox_options.add_argument("--headless")
 
-    # Expect a title "to contain" a substring.
-    expect(page).to_have_title(re.compile("Playwright"))
+# Initialize the Firefox driver with the specified options
+driver = webdriver.Firefox(options=firefox_options,service=FirefoxService(GeckoDriverManager().install()))
 
-def test_get_started_link(page: Page):
-    page.goto("https://playwright.dev/")
+val = "https://www.cimbclicks.com.sg/sgd-to-myr"
+driver.get(val)
 
-    # Click the get started link.
-    page.get_by_role("link", name="Get started").click()
+# Wait for five seconds
+time.sleep(5)
 
-    # Expects page to have a heading with the name of Installation.
-    expect(page.get_by_role("heading", name="Installation")).to_be_visible()
+# Get the page source after the element is present
+page_source = driver.page_source
+
+soup = BeautifulSoup(page_source, features="html.parser")
+rateStr = soup.find(attrs={"class": "rateStr"})
+
+# Use regular expression to extract the rate
+rate = re.search(r"SGD 1.00 = MYR ([\d.]+)", rateStr.text).group(1)
+
+driver.quit()
+
+print(rate)
