@@ -270,7 +270,7 @@ def process_telebot_request(request, bot):
         return update_return_response(req_obj,'ignored') 
 
 def getSavePhoto(id):
-    file_path = STATIC_ROOT
+    file_path = settings.STATIC_ROOT
     img_full_path = os.path.join(file_path, f"image{id}.jpg")
 
     # Check if the file exists and was modified within the last 5 minutes
