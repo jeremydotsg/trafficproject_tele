@@ -38,7 +38,6 @@ load_dotenv()
 logger = logging.getLogger('trafficdb')
 
 # Random String to protect endpoint
-randstring = uuid.uuid4().hex
 is_dev = False
 bot = None
 bot_name = os.getenv('BOT_NAME', '')
@@ -47,7 +46,8 @@ print(os.getenv('ENVIRONMENT'))
 def start_bot():
     # Bot Settings
     # Dev Only
-
+    randstring = None
+    
     if os.getenv('ENVIRONMENT') in ['dev']:
         from unittest.mock import MagicMock
         bot=MagicMock()
@@ -56,6 +56,8 @@ def start_bot():
         
         if os.getenv('ENVIRONMENT') == 'devbot':
             randstring = '1234'
+        else:
+            randstring = uuid.uuid4().hex
     
         proxy_url = os.getenv('PROXY_URL', '')
         tele_secret = os.getenv('TELE_SECRET', '')
@@ -308,6 +310,7 @@ def webhook(request,ranid):
             start_bot()
             return JsonResponse({'status':'ok','job':'refreshbot'},status=200)
         else:
+            logger.error(request)
             return JsonResponse({'error': 'Method not allowed'}, status=405)
     except Exception as e:
         logger.error('Failed to execute webhook: {}'.format(e))
