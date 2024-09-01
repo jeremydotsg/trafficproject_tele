@@ -15,17 +15,16 @@ def get_rate():
         firefox_options.headless = True
         firefox_options.add_argument("--headless")
         firefox_options.add_argument("-private")
-        firefox_options.add_argument("window-size=800,600")
         
         # Initialize the Firefox driver with the specified options
-        # driver = webdriver.Firefox(options=firefox_options, service=FirefoxService(GeckoDriverManager().install()))
-        driver = webdriver.Firefox(options=firefox_options)
+        driver = webdriver.Firefox(options=firefox_options, service=FirefoxService(GeckoDriverManager().install()))
+        #driver = webdriver.Firefox(options=firefox_options)
         
         val = "https://www.cimbclicks.com.sg/sgd-to-myr"
         driver.get(val)
         
         # Wait for the "rateStr" element to contain the text "SGD"
-        wait = WebDriverWait(driver, 5)
+        wait = WebDriverWait(driver, 3)
         element_locator = (By.CLASS_NAME, 'rateStr')
         wait.until(EC.text_to_be_present_in_element(element_locator, "SGD"))
         

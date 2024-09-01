@@ -32,12 +32,12 @@ ENV PORT=8000
 WORKDIR /app
 
 # Install system dependencies
-# RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox ESR
 RUN apk add firefox
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
-RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
-RUN mv geckodriver /usr/bin/
+#RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
+#RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
+# RUN mv geckodriver /usr/bin/
 # RUN geckodriver --version
 # Install Apache2 and apache2-dev
 # RUN apk add --no-cache apache2 apache2-dev
@@ -48,6 +48,8 @@ WORKDIR /app
 # Copy the virtual environment from the builder stage
 COPY --from=builder /app/venv venv
 COPY . .
+# COPY phantomjs /usr/local/share/phantomjs
+# ENV PATH="$PATH:/usr/local/share/phantomjs/bin/phantomjs"
 
 EXPOSE ${PORT}
 

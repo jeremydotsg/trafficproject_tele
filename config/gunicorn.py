@@ -5,7 +5,7 @@ wsgi_app = "trafficproject.wsgi:application"
 # The granularity of Error log outputs
 loglevel = "error"
 # The number of worker processes for handling requests
-workers = 2
+workers = 1
 # The socket to bind
 bind = "0.0.0.0:8000" # Change to 8080 if using nginx
 # Restart workers when code changes (development only!)
