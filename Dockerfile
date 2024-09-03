@@ -29,7 +29,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 # Install Firefox
-RUN apk add firefox-esr geckodriver chromium
+RUN apk add firefox-esr geckodriver
 #RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz
 #RUN tar -xvzf geckodriver-v0.35.0-linux64.tar.gz
 #RUN mv geckodriver /usr/bin/
@@ -44,6 +44,8 @@ COPY . .
 EXPOSE ${PORT}
 
 # Run database migrations and collect static files
+RUN pip install pyppeteer
+RUN pyppeteer-install
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
