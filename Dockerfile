@@ -70,6 +70,8 @@ RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/128.0.6613.
     unzip /tmp/chromedriver-linux64.zip -d /usr/local/bin/ && \
     rm /tmp/chromedriver-linux64.zip
 
+ENV PATH=$PATH:/usr/local/bin/chromedriver-linux64
+
 WORKDIR /app
 
 # Copy the virtual environment from the builder stage
