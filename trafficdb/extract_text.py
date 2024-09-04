@@ -31,6 +31,7 @@ def get_rate():
         # Get the page source after the element is present
         page_source = driver.page_source
         driver.quit()
+        logger.info("Extract Text :: Close the geckodriver")
         soup = BeautifulSoup(page_source, features="html.parser")
         rateStr = soup.find(attrs={"class": "rateStr"})
         
