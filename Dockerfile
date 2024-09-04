@@ -27,14 +27,23 @@ WORKDIR /app
 
 # Install system dependencies
 # RUN apt-get update && apt-get install -y gcc libffi-dev openssl libstdc++6 fontconfig 
-RUN apt-get update && apt-get install -y npm
+RUN apt-get update && apt-get install -y curl
+RUN apt-get update                             \
+ && apt-get install -y --no-install-recommends \
+    curl firefox-esr           \
+ && rm -fr /var/lib/apt/lists/*                \
+ && curl -L https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz | tar xz -C /usr/local/bin \
+ && apt-get purge -y curl
+
+# Verify the installation
+RUN geckodriver --version
 
 # Install PhantomJS
-RUN npm install -g phantomjs-prebuilt --unsafe-perm
-RUN export OPENSSL_CONF=/dev/null
-ENV OPENSSL_CONF=/dev/null
-# Verify the installation
-RUN phantomjs --version
+#RUN npm install -g phantomjs-prebuilt --unsafe-perm
+#RUN export OPENSSL_CONF=/dev/null
+#ENV OPENSSL_CONF=/dev/null
+## Verify the installation
+#RUN phantomjs --version
 
 WORKDIR /app
 
@@ -45,7 +54,7 @@ COPY . .
 EXPOSE ${PORT}
 
 # Run database migrations and collect static files
-RUN python manage.py migrate
+# RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
 WORKDIR /app
