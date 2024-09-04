@@ -33,17 +33,42 @@ RUN apt-get update                             \
     curl firefox-esr           \
  && rm -fr /var/lib/apt/lists/*                \
  && curl -L https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz | tar xz -C /usr/local/bin \
- && apt-get purge -y curl
 
 # Verify the installation
 RUN geckodriver --version
 
-# Install PhantomJS
-#RUN npm install -g phantomjs-prebuilt --unsafe-perm
-#RUN export OPENSSL_CONF=/dev/null
-#ENV OPENSSL_CONF=/dev/null
-## Verify the installation
-#RUN phantomjs --version
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    fonts-liberation \
+    libappindicator3-1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libnspr4 \
+    libnss3 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    xdg-utils \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Download and install Chrome
+RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/128.0.6613.119/linux64/chrome-headless-shell-linux64.zip -O /tmp/chrome-headless-shell-linux64.zip && \
+    unzip /tmp/chrome-headless-shell-linux64.zip -d /opt/chrome && \
+    rm /tmp/chrome-headless-shell-linux64.zip && \
+    ln -s /opt/chrome/chrome-headless-shell /usr/bin/google-chrome
+
+# Download and install ChromeDriver
+RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/128.0.6613.119/linux64/chromedriver-linux64.zip -O /tmp/chromedriver-linux64.zip && \
+    unzip /tmp/chromedriver-linux64.zip -d /usr/local/bin/ && \
+    rm /tmp/chromedriver-linux64.zip
 
 WORKDIR /app
 

@@ -1,25 +1,24 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from bs4 import BeautifulSoup
 import re
 import time
 from selenium.webdriver.common.by import By
 #from selenium.webdriver.support.ui import WebDriverWait
 #from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.firefox.service import Service as FirefoxService
 
 def get_rate():
     try:
-        # Set up Chrome options for headless mode
-        chrome_options = Options()
-        chrome_options.headless = True
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
+        # Set up Firefox options for headless mode
+        firefox_options = Options()
+        firefox_options.headless = True
+        firefox_options.add_argument("-headless")
         
-        # Initialize the Chrome driver with the specified options
-        driver = webdriver.Chrome(options=chrome_options)
+        # Initialize the Firefox driver with the specified options
+        #driver = webdriver.Firefox(options=firefox_options, service=FirefoxService(GeckoDriverManager().install()))
+        driver = webdriver.Firefox(options=firefox_options)
         
         val = "https://www.cimbclicks.com.sg/sgd-to-myr"
         driver.get(val)
