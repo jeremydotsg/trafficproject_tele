@@ -19,7 +19,7 @@ def get_rate():
         chrome_options.add_argument("--disable-dev-shm-usage")
         
         # Initialize the Chrome driver with the specified options
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(options=chrome_options, service=ChromeService(ChromeDriverManager().install()))
         
         val = "https://www.cimbclicks.com.sg/sgd-to-myr"
         driver.get(val)
