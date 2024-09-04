@@ -1,5 +1,5 @@
-# Use a base image with Python and Debian Slim
-FROM python:3.12.5-slim-bullseye AS builder
+# Use a base image with Python and Alpine Linux
+FROM python:3.12.5-alpine AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install system dependencies
-#RUN apt-get update && apt-get install -y gcc libffi-dev libssl-dev
+#RUN apk update && apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 
 # Copy requirements file and install dependencies
 COPY requirements.txt .
@@ -17,7 +17,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Stage 2: Runner
-FROM python:3.12.5-slim-bullseye AS runner
+FROM python:3.12.5-alpine AS runner
 
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
@@ -26,55 +26,10 @@ ENV PORT=8000
 WORKDIR /app
 
 # Install system dependencies
-# RUN apt-get update && apt-get install -y gcc libffi-dev openssl libstdc++6 fontconfig 
-RUN apt -y update
-RUN apt -y upgrade
-RUN apt-get update && apt-get install -y curl
-#RUN apt-get update                             \
-# && apt-get install -y --no-install-recommends \
-#    curl firefox-esr           \
-# && rm -fr /var/lib/apt/lists/*                \
-# && curl -L https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-linux64.tar.gz | tar xz -C /usr/local/bin \
-
-# Verify the installation
-# RUN geckodriver --version
-
-RUN apt-get update && apt-get install -y \
-    wget 
-#    unzip \
-#    fonts-liberation \
-#    libappindicator3-1 \
-#    libasound2 \
-#    libatk-bridge2.0-0 \
-#    libatk1.0-0 \
-#    libcups2 \
-#    libdbus-1-3 \
-#    libdrm2 \
-#    libgbm1 \
-#    libnspr4 \
-#    libnss3 \
-#    libx11-xcb1 \
-#    libxcomposite1 \
-#    libxdamage1 \
-#    libxrandr2 \
-#    xdg-utils \
-#    --no-install-recommends && \
-#    rm -rf /var/lib/apt/lists/*
-RUN apt-get install -y nodejs npm
-RUN npm install chromium
-
-# Download and install Chrome
-#RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/128.0.6613.119/linux64/chrome-headless-shell-linux64.zip -O /tmp/chrome-headless-shell-linux64.zip && \
-#    unzip /tmp/chrome-headless-shell-linux64.zip -d /opt/chrome && \
-#    rm /tmp/chrome-headless-shell-linux64.zip && \
-#    ln -s /opt/chrome/chrome-headless-shell /usr/bin/google-chrome
-
-# Download and install ChromeDriver
-#RUN wget -q https://storage.googleapis.com/chrome-for-testing-public/128.0.6613.119/linux64/chromedriver-linux64.zip -O /tmp/chromedriver-linux64.zip && \
-#    unzip /tmp/chromedriver-linux64.zip -d /usr/local/bin/ && \
-#    rm /tmp/chromedriver-linux64.zip
-
-#ENV PATH=$PATH:/usr/local/bin/chromedriver-linux64
+RUN apk update && apk add --no-cache curl wget nodejs npm chromium chromium-chromedriver
+RUN apk add firefox
+#RUN npm install firefox
+RUN npm install geckodriver
 
 WORKDIR /app
 
@@ -90,5 +45,5 @@ RUN python manage.py collectstatic --noinput
 
 WORKDIR /app
 
-# Start the application using mod_wsgi
+# Start the application using gunicorn
 CMD gunicorn --bind :${PORT} --workers 2 --timeout 120 trafficproject.wsgi
