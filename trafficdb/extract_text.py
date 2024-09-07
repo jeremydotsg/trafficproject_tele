@@ -31,7 +31,7 @@ def get_rate():
             return f"{exchange_rate}"
         else:
             print("Exchange rate not found.")
-            return "Exchange rate not found."    
+            return get_rate()    
     else:
         print(f"Failed to retrieve data. Status code: {response.status_code}")
         
