@@ -26,7 +26,8 @@ ENV PORT=8000
 WORKDIR /app
 
 # Install system dependencies
-RUN apk update && apk add --no-cache curl wget nodejs npm chromium chromium-chromedriver
+RUN apk update && apk add --no-cache curl wget nodejs npm
+# RUN apk add chromium chromium-chromedriver
 RUN apk add firefox
 #RUN npm install firefox
 RUN npm install geckodriver
