@@ -9,7 +9,7 @@ ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install system dependencies
-#RUN apk update && apk add --no-cache gcc musl-dev libffi-dev openssl-dev
+# RUN apk update && apk add --no-cache gcc musl-dev libffi-dev openssl-dev
 
 # Copy requirements file and install dependencies
 COPY requirements.txt .
@@ -28,15 +28,17 @@ WORKDIR /app
 # Install system dependencies
 RUN apk update && apk add --no-cache curl wget nodejs npm
 # RUN apk add chromium chromium-chromedriver
-RUN apk add firefox
-#RUN npm install firefox
-RUN npm install geckodriver
+# RUN apk add nginx
+# RUN apk add firefox
+# RUN npm install firefox
+# RUN npm install geckodriver
 
 WORKDIR /app
 
 # Copy the virtual environment from the builder stage
 COPY --from=builder /app/venv venv
 COPY . .
+# COPY config/default.conf /etc/nginx/http.d/default.conf
 
 EXPOSE ${PORT}
 
@@ -48,3 +50,4 @@ WORKDIR /app
 
 # Start the application using gunicorn
 CMD gunicorn --bind :${PORT} --workers 2 --timeout 120 trafficproject.wsgi
+# CMD sh /app/config/start_server.sh

@@ -1,44 +1,37 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from bs4 import BeautifulSoup
+import requests
 import re
-import time
-from selenium.webdriver.common.by import By
-
-import logging
-logger = logging.getLogger('trafficdb')
 
 def get_rate():
-    try:
-        logger.info("Extract Text :: Start :: Firefox ver")
-        # Set up Firefox options for headless mode
-        firefox_options = Options()
-        firefox_options.headless = True
-        firefox_options.add_argument("-headless")
+    print("Start get rate.")
+    # URL of the API endpoint
+    api_url = "https://r.jina.ai/https://www.cimbclicks.com.sg/sgd-to-myr"
+    
+    # Regular expression to find the exchange rate
+    pattern = r"SGD 1.00 = MYR (\d+\.\d+)"
+    
+    # Send a GET request to the API
+    response = requests.get(api_url)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Parse the response text
+        data = response.text
         
-        logger.info("Extract Text :: Initiated Driver")
-        # Initialize the Firefox driver with the specified options
-        #driver = webdriver.Firefox(options=firefox_options, service=FirefoxService(GeckoDriverManager().install()))
-        driver = webdriver.Firefox(options=firefox_options)
-        logger.info(driver)
-        logger.info("Extract Text :: Send URL to Driver")
-        val = "https://www.cimbclicks.com.sg/sgd-to-myr"
-        driver.get(val)
+        # Print the retrieved data
+        print(data)
         
-        # Wait for the "rateStr" element to contain the text "SGD"
-        time.sleep(10)
+        # Search for the pattern in the content
+        match = re.search(pattern, data)
         
-        # Get the page source after the element is present
-        page_source = driver.page_source
-        driver.quit()
-        logger.info("Extract Text :: Close the geckodriver")
-        soup = BeautifulSoup(page_source, features="html.parser")
-        rateStr = soup.find(attrs={"class": "rateStr"})
+        if match:
+            exchange_rate = match.group(1)
+            print(f"Extracted Exchange Rate: {exchange_rate}")
+            
+            return f"{exchange_rate}"
+        else:
+            print("Exchange rate not found.")
+            return "Exchange rate not found."    
+    else:
+        print(f"Failed to retrieve data. Status code: {response.status_code}")
         
-        # Use regular expression to extract the rate
-        rate = re.search(r"SGD 1.00 = MYR ([\d.]+)", rateStr.text).group(1)
-        
-        return rate
-    except Exception as e:
-        logger.error(e)
-        return f"Error fetching exchange rate: {str(e)}"
+    return f"Failed to retrieve data. Status code: {response.status_code}"
