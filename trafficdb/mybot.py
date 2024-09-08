@@ -21,7 +21,7 @@ bot = None
 bot_name = os.getenv('BOT_NAME', '')
 # Change here for any settings
 causeway_cameras = ["2701","2702","2704"]
-tuas_cameras = ["4703","4713", "4712"]
+tuas_cameras = ["4703","4713","4712"]
 
 photo_dict = {
     "causeway1": "2701",
@@ -345,8 +345,6 @@ def reloadPhotos(bot, chat_id, msg_id, is_group):
     file_path = os.getenv('STATIC_IMG_PATH')
     msg_to_send = ""
     logger.info('Reload Photos :: Start')
-    
-    camera_list = None
     
     camera_list = causeway_cameras + tuas_cameras
     
