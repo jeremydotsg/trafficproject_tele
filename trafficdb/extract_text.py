@@ -1,7 +1,7 @@
 import requests
 import re
 
-def get_rate():
+def get_rate(count=0):
     print("Start get rate.")
     # URL of the API endpoint
     api_url = "https://r.jina.ai/https://www.cimbclicks.com.sg/sgd-to-myr"
@@ -31,7 +31,11 @@ def get_rate():
             return f"{exchange_rate}"
         else:
             print("Exchange rate not found.")
-            return get_rate()    
+            if count > 9:
+                return "Exchange rate not found"
+            else:
+                count = count + 1
+                return get_rate(count)
     else:
         print(f"Failed to retrieve data. Status code: {response.status_code}")
         
