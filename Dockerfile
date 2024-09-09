@@ -42,6 +42,10 @@ COPY . .
 
 EXPOSE ${PORT}
 
+ARG DJANGO_SUPERUSER_USERNAME
+ARG DJANGO_SUPERUSER_EMAIL
+ARG DJANGO_SUPERUSER_PASSWORD
+
 # Run database migrations and collect static files
 RUN python manage.py migrate
 RUN python manage.py createsuperuser --noinput
