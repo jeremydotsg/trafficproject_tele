@@ -1,0 +1,24 @@
+[{
+        "model": "trafficdb.whitelisttguser",
+        "pk": 1,
+        "fields": {
+            "from_id": 6835527694,
+            "created_at": "2024-07-18T05:07:51.763Z",
+            "start_at": "2024-07-18T05:07:51.763Z",
+            "end_at": null,
+            "remarks": null,
+            "is_admin": true
+        }
+    }, {
+        "model": "trafficdb.whitelisttguser",
+        "pk": 2,
+        "fields": {
+            "from_id": 9999,
+            "created_at": "2024-07-30T11:39:09.421Z",
+            "start_at": "2024-07-30T11:39:09.421Z",
+            "end_at": null,
+            "remarks": "Beta Mode: Public User Whitelist. Add a date to end the whitelist.",
+            "is_admin": false
+        }
+    }
+]

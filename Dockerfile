@@ -43,7 +43,9 @@ COPY . .
 EXPOSE ${PORT}
 
 # Run database migrations and collect static files
-# RUN python manage.py migrate
+RUN python manage.py migrate
+RUN python manage.py createsuperuser --noinput
+RUN python manage.py loaddata config/whitelist.json --noinput
 RUN python manage.py collectstatic --noinput
 
 WORKDIR /app
