@@ -1,14 +1,19 @@
 import requests
 import re
 
-def get_rate(count=0):
+def get_rate():
     print("Start get rate.")
     # URL of the API endpoint
     api_url = "https://r.jina.ai/https://www.cimbclicks.com.sg/sgd-to-myr"
-    headers = {'X-No-Cache': 'true'}
+    headers = {"Content-Type": "application/json",
+    "X-Locale": "en-US",
+    "X-Retain-Images": "none",
+    "X-No-Cache": "true",
+    "X-With-Iframe": "true",
+    "X-With-Shadow-Dom": "true"}
     
     # Regular expression to find the exchange rate
-    pattern = r"SGD 1.00 = MYR (\d+\.\d+)"
+    pattern = r"MYR (\d+\.\d+)"
     
     # Send a GET request to the API
     response = requests.get(api_url, headers=headers)
@@ -31,11 +36,7 @@ def get_rate(count=0):
             return f"{exchange_rate}"
         else:
             print("Exchange rate not found.")
-            if count > 9:
-                return "Exchange rate not found"
-            else:
-                count = count + 1
-                return get_rate(count)
+            return data    
     else:
         print(f"Failed to retrieve data. Status code: {response.status_code}")
         
