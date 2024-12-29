@@ -222,14 +222,14 @@ def get_queue(html=False):
                 if average_queue_lengths:
                     for queue_status in average_queue_lengths:
                         avg_length = queue_status['averageLength']
-                        if avg_length < 1:
-                            emoji = '🟢🟢'
+                        if avg_length <= 1.5:
+                            emoji = '🟢'
                         elif avg_length <= 2:
-                            emoji = '🟢🟡'
+                            emoji = '🟡'
                         elif avg_length <= 3:
-                            emoji = '🟡🟡'
+                            emoji = '🟡'
                         elif avg_length <= 4:
-                            emoji = '🟡🔴'
+                            emoji = '🔴'
                         else:
                             emoji = '🔴🔴'
                         queue_info = f"    {'🚪' if 'gate' in each_queue.queueName.lower() else '🚌'} {each_queue.queueName}: {emoji}\n"
