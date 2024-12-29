@@ -1,14 +1,21 @@
 from .models import *
-import re
+from dotenv import load_dotenv
+from datetime import timedelta
+from django.utils import timezone
 from telepot.namedtuple import *
-from django.db.models import Q
+from django.db.models import Q, Avg
+
+import os
+import re
+
+load_dotenv()
 
 msg_dict = {
-    "junk" : "Don't send me junk!",
-    "blacklist" : "Slow mode: I know you are eager to help, but my resources are limited. Sorry that I need to put you on hold. Talk to you later!",
+    "junk" : "I am here to help, don't send me junk please!",
+    "blacklist" : "🐢 Slow mode: I know you are eager to help, but my resources are limited. Sorry that I need to put you on hold. Talk to you later!",
     }
 
-def handle_command(bot, sender, user_id, chat_id, command, param, update_id, is_group):
+def handle_command(bot, user_id, chat_id, command, param, update_id, is_group):
     print("Handle Command: " + command)
     print("Handle Params: " + param)
     msg = ""
@@ -38,9 +45,9 @@ def handle_get_dir(bot, chat_id):
             buttons.append([InlineKeyboardButton(text=direction.directionName, callback_data='/queueb '+ str(direction.id))])
         
         keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-        bot.sendMessage(chat_id, "Which direction do you wish to update?", reply_markup=keyboard)
+        bot.sendMessage(chat_id, "🔄 Which direction do you wish to update?", reply_markup=keyboard)
     else:
-        return "Nothing available for you to update."
+        return "❌ Nothing available for you to update."
     return "Completed request."
 
 def handle_get_dir_queue(bot, chat_id, param):
@@ -57,11 +64,11 @@ def handle_get_dir_queue(bot, chat_id, param):
                 buttons.append([InlineKeyboardButton(text=f"{emoji} {queue.queueName}", callback_data='/queuec ' + str(queue.id))])
             
             keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
-            bot.sendMessage(chat_id, "Which queue do you wish to update?", reply_markup=keyboard)
+            bot.sendMessage(chat_id, "🫂 Which queue do you wish to update?", reply_markup=keyboard)
         else:
-            bot.sendMessage(chat_id, "No such queue. Is it in your dreams?")
+            bot.sendMessage(chat_id, "❌ No such queue. Is it in your dreams?")
     else:
-        return "Incorrect parameters. Request ignored."
+        return "❌ Incorrect parameters. Request ignored."
     return "Completed request."
 
 def handle_get_queue(bot, chat_id, param):
@@ -77,11 +84,11 @@ def handle_get_queue(bot, chat_id, param):
                 keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
                 bot.sendMessage(chat_id, "🚥 How packed is the {} queue?".format(queues[0].queueName), reply_markup=keyboard)
             else:
-                return "No queue configured."
+                return "❌ No queue configured."
         else:
-            return "No such queue. Is it in your dreams?"
+            return "❌ No such queue. Is it in your dreams?"
     else:
-        return "Incorrect parameters. Request ignored."
+        return "❌ Incorrect parameters. Request ignored."
     return "Completed request."
 
 def handle_get_update_queue(bot, chat_id, param):
@@ -96,13 +103,13 @@ def handle_get_update_queue(bot, chat_id, param):
                     queueLength = queuelengths[0],
                     queueUserId = chat_id                
                     )
-                bot.sendMessage(chat_id, "Updated for queue {}. Thank you for your feedback.".format(queues[0].queueName))
+                bot.sendMessage(chat_id, "✅ Updated for queue {}.\n\nThank you for your feedback.".format(queues[0].queueName))
             except Exception as e:
-                return "Error with Queue Update."
+                return "❌ Error with Queue Update."
         else:
-            return "Wrong Params"
+            return "❌ Wrong Params"
     else:
-        return "Wrong Params"
+        return "❌ Wrong Params"
     return "Completed request."
 
 def validate_params(params, num_params):
@@ -184,3 +191,59 @@ def check_rate_limit(bot, chat_id):
         return True
     
     return False
+
+
+
+def get_queue(html=False):
+    direction_pack = []
+    # Get the current time
+    current_time = timezone.now()
+    # Calculate the time one hour ago from the current time
+    one_hour_ago = current_time - timedelta(minutes=60)
+
+    # Get the number of directions
+    for each_direction in Direction.objects.filter(directionDisplay=True).order_by('id').all():
+        direction_info = f"<strong>🧭 Direction: {each_direction.directionName}</strong>\n"
+        queue_type_pack = []
+        # Get the queue types
+        for each_queue_type in QueueType.objects.filter(queueTypeDisplay=True).order_by('-queueTypeDisplayOrder').all():
+            queue_type_info = f"  <strong>{each_queue_type.queueTypeName}</strong>\n"
+            queue_pack = []
+            # Get the queues
+            for each_queue in Queue.objects.filter(direction=each_direction, queueType=each_queue_type).all():
+                # Subquery to get the latest createdTime for each queue
+                queue_statuses = QueueStatus.objects.filter(queue=each_queue, createdTime__gte=one_hour_ago).select_related('queue', 'queueLength').all()
+                # Calculate the average queueLengthValue for each Queue
+                average_queue_lengths = queue_statuses.values('queue__queueName').annotate(averageLength=Avg('queueLength__queueLengthValue')).all()
+                # Main query to get the latest queueLength for each queue
+                # if not average_queue_lengths:
+                #     queue_info = f"    {'🚪' if 'gate' in each_queue.queueName.lower() else '🚌'} {each_queue.queueName}: - \n"
+                queue_info = ''
+                if average_queue_lengths:
+                    for queue_status in average_queue_lengths:
+                        avg_length = queue_status['averageLength']
+                        if avg_length < 1:
+                            emoji = '🟢🟢'
+                        elif avg_length <= 2:
+                            emoji = '🟢🟡'
+                        elif avg_length <= 3:
+                            emoji = '🟡🟡'
+                        elif avg_length <= 4:
+                            emoji = '🟡🔴'
+                        else:
+                            emoji = '🔴🔴'
+                        queue_info = f"    {'🚪' if 'gate' in each_queue.queueName.lower() else '🚌'} {each_queue.queueName}: {emoji}\n"
+                        queue_pack.append(queue_info)
+            if queue_pack:
+                queue_type_pack.append('' + queue_type_info + '' + ''.join(queue_pack))
+        if queue_type_pack:
+            direction_pack.append("" + direction_info + "".join(queue_type_pack)) 
+        else:
+            direction_pack.append("" + direction_info + "No reports.\n")
+                
+    result = " ".join(direction_pack)
+    result += "\n\n*Queue conditions reported within the past hour. \n*Report queue @" + os.getenv('BOT_NAME') + "."
+    if html:
+        result = result.replace("\n", "<br />")
+    return result
+

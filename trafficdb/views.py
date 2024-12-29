@@ -27,7 +27,7 @@ import telepot
 import time
 import uuid
 import re
-
+from .botqueue import *
 
 # Local application/library specific imports
 from .forms import DivErrorList, QueueStatusForm
@@ -301,6 +301,8 @@ def webhook(request,ranid):
         elif request.method == "POST" and ranid == 'refreshbot':
             start_bot()
             return JsonResponse({'status':'ok','job':'refreshbot'},status=200)
+        elif ranid == 'queue':
+            return HttpResponse(botqueue.get_queue(html=True))
         else:
             logger.error(request.method)
             logger.error(request.body)
