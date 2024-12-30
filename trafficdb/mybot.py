@@ -32,7 +32,7 @@ caption_dict = {
     "4713": "Tuas Checkpoint",
     }
 msg_dict = {
-    "start" : "Hello Stranger!\n\nI am here to answer the question: SG-JB Jam or Not?\n\nFind out:\n\n📸Is there jam on Causeway or Tuas?☀️How is the today's weather in Singapore or Johor?\n🚦What about Bus or Checkpoint Queues?\n\nPress the buttons below to find out!",
+    "start" : "Hello Stranger!\n\nI am here to answer the question: SG-JB Jam or Not?\n\nFind out:\n\n📸Is there jam on Causeway or Tuas?\n☀️How is the today's weather in Singapore or Johor?\n🚦What about Bus or Checkpoint Queues?\n\nPress the buttons below to find out!",
     "hello" : "Gwenchana... Everything is fine.",
     "junk" : "I don't understand you. Don't pay play!",
     "notallowed" : "Unchartered waters ahead!",
@@ -240,7 +240,7 @@ def execute_admin_command(bot, command, chat_id, msg_id, is_group, req_obj):
         return update_return_response(req_obj, 'ok')
     elif command == 'getrate':
         bot.sendMessage(chat_id, msg_dict['getrate'])
-        bot.sendMessage(chat_id, extract_text.get_rate())
+        process_rate_job(req_obj,bot, chat_id)
         return update_return_response(req_obj, 'ok')
     elif command == 'getstats':
         bot.sendMessage(chat_id, msg_dict['getstats'])
@@ -531,14 +531,20 @@ def process_routine_job(request, bot):
         
     return update_return_response(None,'ok')
 
-def process_rate_job(request, bot):
+def process_rate_job(request, bot, reply_id=None):
     chat_list_str = os.getenv('CHAT_RATE_ID', '')
     if not check_whitelist("9999"):
         return update_return_response(None,'batchoff')
     # Split the string into a list by commas
     chat_list = chat_list_str.split(',')
+    rate = extract_text.get_rate()
+    save_rate(rate, reply_id)
+    if reply_id:
+        bot.sendMessage(reply_id, "Current CIMB Rate: " + str(extract_text.get_rate()))
+        return update_return_response(None,'ok')
+    
     for chat_id in chat_list:
-        bot.sendMessage(chat_id, "CIMB Rate: " + str(extract_text.get_rate()))
+        bot.sendMessage(chat_id, "[Batch] Current CIMB Rate: " + str(extract_text.get_rate()))
         
     return update_return_response(None,'ok')
 
@@ -579,3 +585,41 @@ def get_everything():
     getSavePhoto("2701", True)
     url_str = ""
     return url_str
+
+def save_rate(retrieved_rate, reply_id = None):
+    rate_save = None
+    if not reply_id:
+        reply_id = "Batch"
+    if is_number(retrieved_rate):
+        rate_save = Rate.objects.create(
+            iso_currency = "MYR",
+            rate = retrieved_rate,
+            source = "CIMB SGD/MYR",
+            success = True,
+            triggered_by = reply_id,
+            error_msg = ""
+            )
+    else:
+        rate_save = Rate.objects.create(
+            iso_currency = "MYR",
+            rate = "",
+            source = "CIMB SGD/MYR",
+            triggered_by = reply_id,
+            success = False,
+            error_msg = rate
+            )
+    return rate_save
+    
+    
+def is_number(value):
+    if isinstance(value, (int, float)):
+        return True
+    if isinstance(value, str):
+        if value.isdigit() or value.isnumeric():
+            return True
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+    return False

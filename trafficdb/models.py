@@ -232,3 +232,16 @@ class TgQueueUpdate(models.Model):
     
     def __str__(self):
         return f"W ID: {self.update_id}"
+    
+class Rate(models.Model):
+    iso_currency = models.CharField(max_length=255, blank=True, null=True)
+    rate = models.CharField(max_length=255, blank=True, null=True)
+    source = models.CharField(max_length=255, blank=True, null=True)
+    success = models.BooleanField()
+    error_msg = models.TextField(blank=True, null=True)
+    triggered_by = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.iso_currency} @ Rate: {self.rate}"

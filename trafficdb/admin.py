@@ -94,3 +94,20 @@ class TgQueueUpdateAdmin(admin.ModelAdmin):
     list_display = ('update_id', 'command', 'parameters', 'user_id', 'created_at', 'modified_at')
     search_fields = ('update_id', 'command', 'parameters', 'user_id')
     list_filter = ('update_id', 'command', 'parameters', 'user_id', 'created_at', 'modified_at')
+    
+
+@admin.register(Rate)
+class RateAdmin(admin.ModelAdmin):
+    list_display = ('iso_currency', 'rate', 'source', 'success', 'triggered_by', 'created_at', 'modified_at')
+    list_filter = ('iso_currency', 'rate', 'source', 'success', 'triggered_by', 'created_at', 'modified_at')
+    search_fields = ('iso_currency', 'rate', 'source', 'success', 'triggered_by', 'error_msg')
+    readonly_fields = ('created_at', 'modified_at')
+
+    def has_add_permission(self, request):
+        # Disable add functionality if required
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        # Disable delete functionality if required
+        return True
+
