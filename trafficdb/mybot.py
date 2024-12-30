@@ -606,7 +606,7 @@ def save_rate(retrieved_rate, reply_id = None):
             source = "CIMB SGD/MYR",
             triggered_by = reply_id,
             success = False,
-            error_msg = rate
+            error_msg = retrieved_rate
             )
     return rate_save
     
